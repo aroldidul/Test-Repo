@@ -1,0 +1,56 @@
+name: Classic/Deployments/Release/US-QA
+on:
+  workflow_dispatch:
+env:
+  CODE_COVERAGE_SERVER: QAWEB111.jax.beeline.com
+  DEPLOY_AGENT_POOL_NAME: classic-us-deploy-pool
+  GIT_API_VERSION: '6.0'
+  HOTFIX_DAYS: "'SUNDAY','MONDAY','TUESDAY','WEDNESDAY'"
+  PACT_FLOW_BASE_URL: https://beeline.pactflow.io
+  PIPELINE_API_VERSION: 6.0-preview
+  POST_DEPLOY_VALIDATOR_SERVER: CWSMONITOR101.jax.beeline.com
+  PROJECT_ID: 3dc85e6b-b1cb-4003-a0e5-856c1f75d8b1
+  PR_CLEAN_MAIN: 'false'
+  PR_CLEAN_SMOKETEST: 'false'
+  PR_UPGRADE_MAIN: '16.0'
+  PR_UPGRADE_RC: '16.0'
+  PR_UPGRADE_SMOKETEST: '16.0'
+  RELEASE_PROD_BUILD_DAY: THURSDAY
+  SSH_CHECKOUT: 'false'
+  SSH_CRED: D:\BambooUtil\ConfigSettings\cred.txt
+  SSH_USER: D:\BambooUtil\ConfigSettings\user.txt
+  VERACODE_PUBLISH_TIMEOUT: '180'
+  VERACODE_SCAN_TIMEOUT: '1800'
+  VERSION_CANDIDATE: 21.13.2103.2518
+  VERSION_MASTER: 21.13.2103.2518
+  WEEKLY_PULL_REQ_CHANNEL: https://beelineco.webhook.office.com/webhookb2/09e677f1-3732-4c86-9638-cc15530af8dc@3289e021-493f-463c-bfc1-feb3ba494685/IncomingWebhook/d3bdd5dfd7b944c2b27b102541ea2cd8/468fe4e6-50df-434a-95da-0ca3493c6f4d
+  WEEKLY_PULL_REQ_EMAIL: "'e52559ae.beelineco.onmicrosoft.com@amer.teams.ms'"
+jobs:
+  azure_pipelines_templates_deployment:
+    name: azure_pipelines_templates_deployment
+    uses: "./.github/workflows/azure_pipelines_templates_deployment.yml"
+    with:
+      environmentProperties: '{"versionToUse":"D:\\AzureDevOps-Store\\dynamic\\azcandidate.txt","environmentName":"QA","validatorProperties":{"codeVersion":true,"databaseVersion":true,"siteHealth":true,"databaseUpgrade":true,"emailApproval":false,"utilityProcess":false,"dwValidation":true},"notificationSetting":{"release":{"environment":"QA (US and EU)","jiraQuery":"D:\\AzureDevOps-Store\\dynamic\\jqlcandidate.txt","duration":"2 hours (based on maintenance window)","recipients":"''qa-us@beeline.com'',''qa-island@beeline.com'',''BeelineNetOps@beeline.com'',''developers@beeline.com''","ccRecipients":"''BuildOPS@beeline.com'',''BeelineTechOpsAPAC@beeline.com''"}},"transition":{"jql":"D:\\AzureDevOps-Store\\dynamic\\jqlcandidate.txt","destination":"Ready for QA"},"extractFolder":"QACodeExtract","sourceZIPPath":"D:\\Code\\AzCandidate","zipName":"Warehouse.zip","zipFolder":"ZIP","backupLocation":{"server":"utilsql1001.jax.beeline.com","diskDrive":"D","path":"BambooCode\\QA"},"batches":[{"number":1,"releaseDowntime":2,"opsviewObjects":[{"type":"Host","objects":"qapr101.jax.beeline.com,qabps101.jax.beeline.com"},{"type":"Host","objects":"qaweb101.jax.beeline.com,qaweb102.jax.beeline.com,qaweb105.jax.beeline.com,qaweb106.jax.beeline.com"},{"type":"Host","objects":"qaappweb101.jax.beeline.com,qaappweb102.jax.beeline.com"},{"type":"Host","objects":"URL_qa.beeline.com,URL_origin-qa.beeline.com"}],"dbScriptPathCWS":"D:\\Code\\AzCandidate\\QAScripts","dbScriptPathPR":"D:\\Code\\AzCandidate\\QAPRScripts","dbScriptPathInt":"D:\\Code\\AzCandidate\\QAIntScripts","dbScriptPathFin":"D:\\Code\\AzCandidate\\QAFinScripts","webApplicationPools":[{"number":1,"entities":"\"QA221\",\"QA222\",\"QA223\",\"QA224\",\"QA225\",\"QA226\",\"QA227\",\"QA228\",\"QA229\",\"QA230\"","product":"CWS Candidate","pushGroup":"QA"},{"number":2,"entities":"\"QA231\",\"QA232\",\"QA233\",\"QA234\",\"QA235\",\"QA279\"","product":"CWS Candidate","pushGroup":"QA"},{"number":3,"entities":"\"QA341\",\"QA342\",\"QA343\",\"QA344\",\"QA345\",\"QA346\",\"QA347\",\"QA348\",\"QA349\",\"QA350\"","product":"CWS Candidate","pushGroup":"QA"}],"oltp":[{"product":"CWS Candidate","pushGroup":"QA","smcDependent":1,"updateVersion":1,"maxThreads":30,"printThreadLog":1,"upgradeTimeout":60}],"findw":[{"product":"CWSFinDW","pushGroup":"3 QA","smcDependent":1,"updateVersion":1,"maxThreads":30,"printThreadLog":1,"upgradeTimeout":60}],"slaDW":[{"product":"CWSDW","pushGroup":"3 QA","smcDependent":1,"updateVersion":1,"maxThreads":30,"printThreadLog":1,"upgradeTimeout":60}],"prServers":[{"fqdn":"qapr101.jax.beeline.com","name":"qapr101","diskDrive":"D","excludeDirectory":"LOGS,External,QA,ZIP,QACodeExtract","excludeFileType":"app_offline.htm,*.exe.config,*.svn","sourcePath":"\\Source\\QA\\","destinationPaths":["\\Source\\QA\\"],"services":",\"BeelineLegacyProcessingServicePR (qapr101)\"","fileTypeOverride":"*.dll,*.exe,*.tlb","pathOverride":"D:\\Source\\QA\\PR.NET\\,D:\\Source\\QA\\BeelineCom\\DllsActive\\,D:\\Source\\QA\\Beeline\\ScheduledJobs\\PayRegGen\\,D:\\Source\\QA\\Beeline\\ScheduledJobs\\ExpRegGen\\"}],"prMSBuildVersion":"$(PR_UPGRADE_RC)","prConfigFiles":["PR.NET\\payRegGen.exe.config","PR.NET\\ExpRegGen.exe.config","BeelineCom\\PRProcessService\\Beeline.Legacy.Processing.Service.exe.config"],"webServers":[{"fqdn":"QAWEB101.jax.beeline.com","name":"QAWEB101","iisRestart":false,"diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\RC\\","destinationPaths":["\\Source\\RC\\"],"servicesToCheck":"IISADMIN,WAS,W3SVC"},{"fqdn":"QAWEB102.jax.beeline.com","name":"QAWEB102","iisRestart":false,"diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\RC\\","destinationPaths":["\\Source\\RC\\"],"servicesToCheck":"IISADMIN,WAS,W3SVC"},{"fqdn":"QAWEB103.jax.beeline.com","name":"QAWEB103","iisRestart":false,"diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\RC\\","destinationPaths":["\\Source\\RC\\"],"servicesToCheck":"IISADMIN,WAS,W3SVC"},{"fqdn":"QAWEB104.jax.beeline.com","name":"QAWEB104","iisRestart":false,"diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\RC\\","destinationPaths":["\\Source\\RC\\"],"servicesToCheck":"IISADMIN,WAS,W3SVC"},{"fqdn":"QAWEB105.jax.beeline.com","name":"QAWEB105","iisRestart":false,"diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\RC\\","destinationPaths":["\\Source\\RC\\"],"servicesToCheck":"IISADMIN,WAS,W3SVC"},{"fqdn":"QAWEB106.jax.beeline.com","name":"QAWEB106","iisRestart":false,"diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\RC\\","destinationPaths":["\\Source\\RC\\"],"servicesToCheck":"IISADMIN,WAS,W3SVC"},{"fqdn":"devweb101.jax.beeline.com","name":"devweb101","iisRestart":true,"diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\Dev\\","destinationPaths":["\\Source\\Dev\\"],"servicesToCheck":"IISADMIN,WAS,W3SVC"}],"bpsServers":[{"fqdn":"QABPS101.jax.beeline.com","name":"QABPS101","diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\QA\\","destinationPaths":["\\Source\\QA\\"],"services":",\"BeelineBPS_QA\""},{"fqdn":"QABPS103.jax.beeline.com","name":"QABPS103","diskDrive":"D","folder":"CWS","sourcePath":"\\Source\\QA\\","destinationPaths":["\\Source\\QA\\"],"services":",\"BeelineBPS_QA\""}],"interviewServers":[{"fqdn":"QAAPPWEB101.jax.beeline.com","name":"QAAPPWEB101","iisRestart":false,"diskDrive":"D","folder":"deployment","deploymentBat":"DeployAll.bat","applicationPools":null,"replacementSite":"relqaapps01.jax.beeline.com"},{"fqdn":"QAAPPWEB102.jax.beeline.com","name":"QAAPPWEB102","iisRestart":false,"diskDrive":"D","folder":"deployment","deploymentBat":"DeployAll.bat","applicationPools":null,"replacementSite":"relqaapps01.jax.beeline.com"},{"fqdn":"devappweb101.jax.beeline.com","name":"devappweb101","iisRestart":false,"diskDrive":"D","folder":"deployment","deploymentBat":"DeployAll.bat","applicationPools":"interview","replacementSite":null}],"importAPIServers":[{"fqdn":"QAAPPWEB101.jax.beeline.com","name":"QAAPPWEB101","iisRestart":false,"diskDrive":"D","folder":"ImportAPI","sourcePath":"\\Source\\QAAPI07\\","destinationPaths":["\\Source\\QAAPI07\\"],"applicationPools":"qaapi07.beeline.com"},{"fqdn":"QAAPPWEB102.jax.beeline.com","name":"QAAPPWEB102","iisRestart":false,"diskDrive":"D","folder":"ImportAPI","sourcePath":"\\Source\\QAAPI07\\","destinationPaths":["\\Source\\QAAPI07\\"],"applicationPools":"qaapi07.beeline.com"},{"fqdn":"devappweb101.jax.beeline.com","name":"devappweb101","iisRestart":false,"diskDrive":"D","folder":"ImportAPI","sourcePath":"\\Source\\Dev\\","destinationPaths":["\\Source\\Dev\\"],"applicationPools":"API"}],"dwServers":[{"product":"CWSFinDW","pushGroup":"3 QA","throttleLimit":3}],"intServers":[{"product":"CWS Candidate","pushGroup":"QA","throttleLimit":3}]}]}'
+  Trigger-REGQA:
+    name: REG QA279
+    runs-on: windows-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Trigger REG QA279
+      run: |-
+        if(!((Get-Date).DayOfWeek.ToString().ToUpper().Equals("${{ env.RELEASE_PROD_BUILD_DAY }}") `
+          -AND (Get-Date).Hour -lt 3))
+        {
+          Write-Host "QA279 Regression won't be triggered."
+          Exit 0
+        }
+        $versionToUse = [System.IO.File]::ReadAllText("D:\AzureDevOps-Store\dynamic\azcandidate.txt")
+        $body = "{`"stagesToSkip`":[],`"resources`":{`"repositories`":{`"self`":{`"refName`":`"refs/heads/master`"}}},`"templateParameters`":{`"testEnvironment`":`"QAVeraCode`",`"versionToUse`":`"$($versionToUse)`",`"runAPITest`":false},`"variables`":{}}"
+        BL-Trigger-AzDoPipeline -authType Bearer `
+          -azDoServerUrl "${{ github.server.url }}/${{ github.repository }}" `
+          -projectId ${{ env.PROJECT_ID }} -pipelineId 1217 `
+          -accessToken ${{ env.System_AccessToken }} `
+          -body $body `
+          -apiVersion ${{ env.PIPELINE_API_VERSION }}
+      shell: powershell
