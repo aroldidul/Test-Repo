@@ -1,0 +1,2659 @@
+# Environment variables defined in a calling workflow are not accessible to this reusable workflow. Refer to the documentation for further details on this limitation.
+name: azure_pipelines_templates_deployment
+on:
+  workflow_call:
+    inputs:
+      isHotfix:
+        required: false
+        default: false
+        type: boolean
+      deployPool:
+        required: false
+        default: "$(DEPLOY_AGENT_POOL_NAME)"
+        type: string
+      idealCPUPercentage:
+        required: false
+        default: "$(IDEAL_CPU_PERCENTAGE)"
+        type: string
+      environmentProperties:
+        required: false
+        type: string
+      smtpServer:
+        required: false
+        default: "$(US_SMTP_SERVER)"
+        type: string
+      smcServer:
+        required: false
+        default: "$(SMC_US_SERVER)"
+        type: string
+      smcDatabase:
+        required: false
+        default: "$(SMC_US_DATABASE)"
+        type: string
+jobs:
+  azure_pipelines_templates_deployment_helper_stage_validate-TIME:
+    name: Time
+    runs-on: windows-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      isHotfix: "${{ inputs.isHotfix }}"
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: ${{ coalesce(inputs.environmentProperties.maintenance, '') != '' && coalesce(inputs.environmentProperties.versionToUse, 'NA') != 'NA' && (coalesce(inputs.environmentProperties.maintenance, '') != '' || coalesce(inputs.environmentProperties.batches[0].webServers[0], '') != '') }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Verify Time
+      if: inputs.isHotfix == true
+      run: |-
+        BL-Check-Maintenance -scheduleType ${{ fromJSON(env.environmentProperties).maintenance.hotfix.scheduleType }} `
+          -maintenanceTimeList ${{ fromJSON(env.environmentProperties).maintenance.hotfix.maintenanceTimeList }} `
+          -isMonday ${{ fromJSON(env.environmentProperties).maintenance.hotfix.isMonday }} `
+          -isTuesday ${{ fromJSON(env.environmentProperties).maintenance.hotfix.isTuesday }} `
+          -isWednesday ${{ fromJSON(env.environmentProperties).maintenance.hotfix.isWednesday }} `
+          -isThursday ${{ fromJSON(env.environmentProperties).maintenance.hotfix.isThursday }} `
+          -isFriday ${{ fromJSON(env.environmentProperties).maintenance.hotfix.isFriday }} `
+          -isSaturday ${{ fromJSON(env.environmentProperties).maintenance.hotfix.isSaturday }} `
+          -isSunday ${{ fromJSON(env.environmentProperties).maintenance.hotfix.isSunday }}
+      shell: powershell
+    - name: Verify Time
+      if: inputs.isHotfix == false
+      run: |-
+        BL-Check-Maintenance -scheduleType ${{ fromJSON(env.environmentProperties).maintenance.release.scheduleType }} `
+          -maintenanceTimeList ${{ fromJSON(env.environmentProperties).maintenance.release.maintenanceTimeList }} `
+          -isMonday ${{ fromJSON(env.environmentProperties).maintenance.release.isMonday }} `
+          -isTuesday ${{ fromJSON(env.environmentProperties).maintenance.release.isTuesday }} `
+          -isWednesday ${{ fromJSON(env.environmentProperties).maintenance.release.isWednesday }} `
+          -isThursday ${{ fromJSON(env.environmentProperties).maintenance.release.isThursday }} `
+          -isFriday ${{ fromJSON(env.environmentProperties).maintenance.release.isFriday }} `
+          -isSaturday ${{ fromJSON(env.environmentProperties).maintenance.release.isSaturday }} `
+          -isSunday ${{ fromJSON(env.environmentProperties).maintenance.release.isSunday }}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_validate-VERSION:
+    name: Version
+    runs-on: windows-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      isHotfix: "${{ inputs.isHotfix }}"
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: ${{ coalesce(inputs.environmentProperties.batches[0].webServers[0], '') != '' && coalesce(inputs.environmentProperties.versionToUse, 'NA') != 'NA' && (coalesce(inputs.environmentProperties.maintenance, '') != '' || coalesce(inputs.environmentProperties.batches[0].webServers[0], '') != '') }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Verify Version
+      run: |-
+        $artifactVersion = BL-Get-ArtifactVersion -artifactLocation '${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ env.ZIP_FILE_CWS }}' `
+                              -extractDestination '${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ fromJSON(env.environmentProperties).extractFolder }}' `
+                              -versionDll '${{ env.VERSION_DLL }}';
+        $destinationVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo('\\${{ fromJSON(env.environmentProperties).batches[0].webServers[0].fqdn }}\${{ fromJSON(env.environmentProperties).batches[0].webServers[0].diskDrive }}$\${{ fromJSON(env.environmentProperties).batches[0].webServers[0].destinationPaths[0] }}${{ fromJSON(env.environmentProperties).batches[0].webServers[0].folder }}\bin\${{ env.VERSION_DLL }}').ProductVersion;
+        Exit [int]($artifactVersion -eq $destinationVersion);
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_predeploy-build:
+    runs-on: ubuntu-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+      smcServer: "${{ inputs.smcServer }}"
+      smcDatabase: "${{ inputs.smcDatabase }}"
+    steps:
+#       # section was not transformed because it contains unsupported usage of the `each` syntax
+#       "${{ each batch in parameters.environmentProperties.batches }}":
+#       - "${{ if ne(coalesce( batch.dbScriptPath,''),'') }}":
+#         - job: EDB${{ batch.number }}
+#           displayName: Extract DB Scripts
+#           steps:
+#           - checkout: none
+#           - task: PowerShell@2
+#             displayName: Pre Cleanup DBScripts ${{ batch.number }}
+#             inputs:
+#               targetType: inline
+#               script: |
+#                 BL-Delete-Item -serverName localhost `
+#                   -paths (,"${{ batch.dbScriptPath }}") `
+#                   -removeMainDir $true
+#                 BL-Extract-Artifact -serverName localhost `
+#                   -archivePath "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ batch.dbZipFile }}" `
+#                   -extractTo "${{ batch.dbScriptPath }}"
+#                   -paths (,"${{ batch.dbScriptPathCWS }}") `
+#                   -archivePath "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ env.ZIP_FILE_CWS }}" `
+#                   -extractTo "${{ batch.dbScriptPathCWS }}"
+#                 BL-Copy-FilesToSQLServers -product "${{ batch.oltp.product }}" `
+#                   -pushGroups "${{ batch.oltp.pushGroup }}" `
+#                   -smcServer "${{ env.smcServer }}" `
+#                   -smcDatabase "${{ env.smcDatabase }}" `
+#                   -folderName "${{ fromJSON(env.environmentProperties).envinronmentName}}Scripts" `
+#                   -sourcePath @("${{ batch.dbScriptPathCWS }}${{ env.PATH_DB_CWS }}","${{ batch.dbScriptPathCWS }}${{ env.POSTDEPLOY_PATH }}") `
+#                   -destinationDrive "${{ batch.oltp.diskDrive }}"
+#                   -paths (,"${{ batch.dbScriptPathPR }}") `
+#                   -folderName "${{ fromJSON(env.environmentProperties).envinronmentName}}PRScripts" `
+#                   -sourcePath @(,"${{ batch.dbScriptPathPR }}${{ env.PATH_DB_PR }}") `
+#                   -paths (,"${{ batch.dbScriptPathFin }}") `
+#                   -archivePath "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ fromJSON(env.environmentProperties).zipName }}" `
+#                   -extractTo "${{ batch.dbScriptPathFin }}"
+#                 BL-Copy-FilesToSQLServers -product "${{ batch.findw.product }}" `
+#                   -pushGroups "${{ batch.findw.pushGroup }}" `
+#                   -folderName "${{ fromJSON(env.environmentProperties).envinronmentName}}WarehouseScripts" `
+#                   -sourcePath @("${{ batch.dbScriptPathFin }}${{ env.PATH_DB_WAREHOUSE }}","${{ batch.dbScriptPathFin }}${{ env.PATH_SSIS_WAREHOUSE }}") `
+#                   -destinationDrive "${{ batch.findw.diskDrive }}"#>
+#                   -paths (,"${{ batch.dbScriptPathInt }}") `
+#             displayName: Pre Extract DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.dbScriptPathCWS,''),'') }}":
+#         - job: ECWSDB${{ batch.number }}
+#           displayName: Extract CWS Scripts
+#             displayName: Pre Cleanup CWS DBScripts ${{ batch.number }}
+#             displayName: Pre Extract CWS DBScripts ${{ batch.number }}
+#       - "${{ if and(ne(coalesce( batch.dbScriptPathCWS,''),''), eq( batch.oltp.optimizeDbupgrade, true)) }}":
+#         - job: CCWSDB${{ batch.number }}
+#           dependsOn: ECWSDB${{ batch.number }}
+#           condition: succeeded()
+#           displayName: Copy CWS Scripts
+#             displayName: Copy CWS DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.dbScriptPathPR,''),'') }}":
+#         - job: EPRDB${{ batch.number }}
+#           displayName: Extract PR Scripts
+#             displayName: Pre Cleanup PR ${{ batch.number }}
+#             displayName: Pre Extract PR ${{ batch.number }}
+#               script: "BL-Extract-Artifact -serverName localhost `\n  -archivePath \"${{ fromJSON(env.environmentProperties).sourceZIPPath }}\\${{ env.ZIP_FILE_PR }}\" `\n  -extractTo \"${{ batch.dbScriptPathPR }}\"   \n"
+#       - "${{ if and(ne(coalesce( batch.dbScriptPathPR,''),''), eq( batch.oltp.optimizeDbupgrade, true)) }}":
+#         - job: CPRDB${{ batch.number }}
+#           dependsOn: EPRDB${{ batch.number }}
+#           displayName: Copy PR Scripts
+#             displayName: Copy PR DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.dbScriptPathFin,''),'') }}":
+#         - job: EDWDB${{ batch.number }}
+#           displayName: Extract DW Scripts
+#             displayName: Pre Cleanup DW ${{ batch.number }}
+#             displayName: Pre Extract DW ${{ batch.number }}
+#       - "${{ if and(ne(coalesce( batch.dbScriptPathFin,''),''), eq( batch.findw.optimizeDbupgrade, true)) }}":
+#         - job: CWDB${{ batch.number }}
+#           dependsOn: EDWDB${{ batch.number }}
+#           condition: succeded()
+#           displayName: Copy Warehouse Scripts
+#             displayName: Copy Warehouse DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.dbScriptPathInt,''),'') }}":
+#         - job: EINTDB${{ batch.number }}
+#           displayName: Extract Int Scripts
+#             displayName: Pre Cleanup INT ${{ batch.number }}
+#             displayName: Pre Extract INT ${{ batch.number }}
+#               script: "BL-Extract-Artifact -serverName localhost `\n  -archivePath \"${{ fromJSON(env.environmentProperties).sourceZIPPath }}\\${{ env.ZIP_FILE_INTEGRATION }}.zip\" `\n  -extractTo \"${{ batch.dbScriptPathInt }}\"    \n"
+#       - "${{ if ne(coalesce( batch.webServers,''),'') }}":
+#         - "${{ each webServer in batch.webServers }}":
+#           - job: CECWS${{ webServer.name }}
+#             displayName: Copy Code and Extract CWS (${{ webServer.name }})
+#             steps:
+#             - checkout: none
+#             - task: PowerShell@2
+#               displayName: Pre Cleanup CWS ${{ batch.number }} (${{ webServer.name }})
+#               inputs:
+#                 targetType: inline
+#                 script: |
+#                   BL-Delete-Item -serverName ${{ webServer.fqdn }} `
+#                   BL-Delete-Item -serverName ${{ bpsServer.fqdn }} `
+#                   BL-Copy-Code -serverName localhost `
+#                     -copyFrom "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\" `
+#                     -copyTo "\\${{ bpsServer.fqdn }}\${{ bpsServer.diskDrive }}$${{ bpsServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\" `
+#                     -filesToCopy "${{ env.ZIP_FILE_CWS }}"
+#                   BL-Extract-Artifact -serverName ${{ bpsServer.fqdn }} `
+#                   BL-Delete-Item -serverName ${{ prServer.fqdn }} `
+#                     -copyTo "\\${{ prServer.fqdn }}\${{ prServer.diskDrive }}$${{ prServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\" `
+#                     -filesToCopy "${{ env.ZIP_FILE_PR }}"
+#                   BL-Extract-Artifact -serverName ${{ prServer.fqdn }} `
+#                   BL-Delete-Item -serverName localhost `
+#                     -paths (,"${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ fromJSON(env.environmentProperties).extractFolder }}${{ interviewServer.name }}") `
+#                     -removeMainDir $true
+#                   BL-Extract-Artifact -serverName localhost `
+#                     -archivePath "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ env.ZIP_FILE_INTERVIEW }}" `
+#                     -extractTo "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\${{ fromJSON(env.environmentProperties).extractFolder }}${{ interviewServer.name }}"
+#                   BL-Delete-Item -serverName ${{ importAPIServer.fqdn }} `
+#                     -copyTo "\\${{ importAPIServer.fqdn }}\${{ importAPIServer.diskDrive }}$${{ importAPIServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\" `
+#                     -filesToCopy "${{ env.ZIP_FILE_API }}"
+#                     -paths (,"${{ webServer.diskDrive }}:${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#             - "${{ if eq(parameters.environmentProperties.candidateCompare, true) }}":
+#               - task: PowerShell@2
+#                 displayName: Pre Copy Code CWS ${{ batch.number }} (${{ webServer.name }})
+#                 inputs:
+#                   targetType: inline
+#                   script: |
+#                     BL-Copy-Code -serverName localhost `
+#                       -copyFrom "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\" `
+#                       -copyTo "\\${{ webServer.fqdn }}\${{ webServer.diskDrive }}$${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\" `
+#                       -filesToCopy "${{ env.ZIP_FILE_CANDIDATECOMPARE }}"
+#                     BL-Extract-Artifact -serverName ${{ webServer.fqdn }} `
+#                 displayName: Pre Extract Code CWS ${{ batch.number }} (${{ webServer.name }})
+#                       -archivePath "${{ webServer.diskDrive }}:${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\${{ env.ZIP_FILE_CANDIDATECOMPARE }}" `
+#                       -extractTo "${{ webServer.diskDrive }}:${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}"
+#             - ? "${{ if or(eq(coalesce( parameters.environmentProperties.candidateCompare,''),''),eq(parameters.environmentProperties.candidateCompare, false)) }}"
+#               : - task: PowerShell@2
+#                   displayName: Pre Copy Code CWS ${{ batch.number }} (${{ webServer.name }})
+#                   inputs:
+#                     targetType: inline
+#                     script: |
+#                       BL-Copy-Code -serverName localhost `
+#                         -copyFrom "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\" `
+#                         -copyTo "\\${{ webServer.fqdn }}\${{ webServer.diskDrive }}$${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\" `
+#                         -filesToCopy "${{ env.ZIP_FILE_CWS }}"
+#                       BL-Extract-Artifact -serverName ${{ webServer.fqdn }} `
+#                 - task: PowerShell@2
+#                   displayName: Pre Extract Code CWS ${{ batch.number }} (${{ webServer.name }})
+#                         -archivePath "${{ webServer.diskDrive }}:${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\${{ env.ZIP_FILE_CWS }}" `
+#                         -extractTo "${{ webServer.diskDrive }}:${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}"
+#       - "${{ if ne(coalesce( batch.bpsServers,''),'') }}":
+#         - "${{ each bpsServer in batch.bpsServers }}":
+#           - job: CEBPS${{ bpsServer.name }}
+#             displayName: Copy Code and Extract BPS (${{ bpsServer.name }})
+#               displayName: Pre Cleanup BPS ${{ batch.number }} (${{ bpsServer.name }})
+#                     -paths (,"${{ bpsServer.diskDrive }}:${{ bpsServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#               displayName: Pre Copy code BPS ${{ batch.number }} (${{ bpsServer.name }})
+#               displayName: Pre Extract code BPS ${{ batch.number }} (${{ bpsServer.name }})
+#                     -archivePath "${{ bpsServer.diskDrive }}:${{ bpsServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\${{ env.ZIP_FILE_CWS }}" `
+#                     -extractTo "${{ bpsServer.diskDrive }}:${{ bpsServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}"
+#       - "${{ if ne(coalesce( batch.prServers,''),'') }}":
+#         - "${{ each prServer in batch.prServers }}":
+#           - job: CEPR${{ prServer.name }}
+#             displayName: Copy Code and Extract PR (${{ prServer.name }})
+#               displayName: Pre Cleanup PR ${{ batch.number }} (${{ prServer.name }})
+#                     -paths (,"${{ prServer.diskDrive }}:${{ prServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#               displayName: Pre Copy Code PR ${{ batch.number }} (${{ prServer.name }})
+#               displayName: Pre Extract Code PR ${{ batch.number }} (${{ prServer.name }})
+#                     -archivePath "${{ prServer.diskDrive }}:${{ prServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\${{ env.ZIP_FILE_PR }}" `
+#                     -extractTo "${{ prServer.diskDrive }}:${{ prServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}"
+#       - "${{ if ne(coalesce( batch.interviewServers,''),'') }}":
+#         - "${{ each interviewServer in batch.interviewServers }}":
+#           - job: CEINTERVIEW${{ interviewServer.name }}
+#             displayName: Extract Interview (${{ interviewServer.name }})
+#               displayName: Pre Cleanup Interview ${{ batch.number }} (${{ interviewServer.name }})
+#               displayName: Pre Extract Code Interview ${{ batch.number }} (${{ interviewServer.name }})
+#       - "${{ if ne(coalesce( batch.importAPIServers,''),'') }}":
+#         - "${{ each importAPIServer in batch.importAPIServers }}":
+#           - job: CEAPI${{ importAPIServer.name }}
+#             displayName: Copy Code and Extract API (${{ importAPIServer.name }})
+#               displayName: Pre Cleanup API ${{ batch.number }} (${{ importAPIServer.name }})
+#                     -paths (,"${{ importAPIServer.diskDrive }}:${{ importAPIServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#               displayName: " Pre Copy Code API ${{ batch.number }} (${{ importAPIServer.name }})"
+#               displayName: Pre Extract Code API ${{ batch.number }} (${{ importAPIServer.name }})
+#                 script: |-
+#                   BL-Extract-Artifact -serverName ${{ importAPIServer.fqdn }} `
+#                     -archivePath "${{ importAPIServer.diskDrive }}:${{ importAPIServer.sourcePath }}${{ fromJSON(env.environmentProperties).zipFolder }}\${{ env.ZIP_FILE_API }}" `
+#                     -extractTo "${{ importAPIServer.diskDrive }}:${{ importAPIServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}"
+#       steps: []
+  azure_pipelines_templates_deployment_helper_stage_notification-NOTIFY${{ parameters.actionType }}:
+    name: Notify ${{ parameters.actionType }}
+    runs-on: windows-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      isHotfix: "${{ inputs.isHotfix }}"
+      actionType: Start
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+      smtpServer: "${{ inputs.smtpServer }}"
+    if: ${{ coalesce(inputs.environmentProperties.notificationSetting, '') != '' && coalesce(inputs.environmentProperties.notificationSetting, '') != '' || coalesce(inputs.environmentProperties.validatorProperties, '') != '' }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Notify
+      if: coalesce(inputs.environmentProperties.notificationSetting.repoNames, '') != ''
+      run: |-
+        $repoMergedInfo = @()
+        $reposToCheck = @()
+        $repoNames = ${{ fromJSON(env.environmentProperties).notificationSetting.repoNames }}
+        foreach($repoName in $repoNames){
+          $reposToCheck += New-Object -TypeName PSObject -Property @{
+            repoName = $repoName
+            previousBuildFilePath = "${{ env.AZURE_DEVOPS_STORE }}\evaluator\${{ fromJSON(env.environmentProperties).notificationSetting.branchName }}-${{ fromJSON(env.environmentProperties).notificationSetting.prefix }}$($repoName)-prev.txt"
+            currentBuildFilePath = "${{ env.AZURE_DEVOPS_STORE }}\evaluator\${{ fromJSON(env.environmentProperties).notificationSetting.branchName }}-${{ fromJSON(env.environmentProperties).notificationSetting.prefix }}$($repoName).txt"
+          }
+        }
+        $repoMergedInfo = BL-Get-MergeInfo -authType Bearer `
+                      -repoInfo $reposToCheck `
+                      -azDoServerUrl "${{ github.server.url }}/${{ github.repository }}" `
+                      -projectId "${{ env.PROJECT_ID }}" `
+                      -branchName "${{ fromJSON(env.environmentProperties).notificationSetting.branchName }}" `
+                      -accessToken ${{ env.System_AccessToken }} `
+                      -apiVersion ${{ env.GIT_API_VERSION }} `
+                      -recordLimit 1000
+        $versionToUse = '${{ fromJSON(env.environmentProperties).versionToUse }}'
+        if(Test-Path $versionToUse)
+        {
+          $versionToUse = [System.IO.File]::ReadAllText($versionToUse)
+        }
+        BL-Broadcast-Deployment -sender "${{ env.BUILDOPS_EMAIL }}" `
+          -recipients ${{ fromJSON(env.environmentProperties).notificationSetting.recipients }} `
+          -smtpServer "${{ env.smtpServer }}" `
+          -versionNumber $versionToUse `
+          -environment "${{ fromJSON(env.environmentProperties).notificationSetting.environment }}" `
+          -actionType "${{ env.actionType }}" `
+          -maintenanceDuration "${{ fromJSON(env.environmentProperties).notificationSetting.duration }}" `
+          -imageAssetsPath "${{ env.IMAGE_ASSETS_PATH }}" `
+          -cc ${{ fromJSON(env.environmentProperties).notificationSetting.ccRecipients }} `
+          -repoMergedInfo $repoMergedInfo
+      shell: powershell
+    - name: Notify
+      if: coalesce(inputs.environmentProperties.notificationSetting.repoNames, '') == '' && inputs.isHotfix == false
+      run: |-
+        $jiraQuery = [System.IO.File]::ReadAllText('${{ fromJSON(env.environmentProperties).notificationSetting.release.jiraQuery }}')
+        $versionToUse = '${{ fromJSON(env.environmentProperties).versionToUse }}'
+        if(Test-Path $versionToUse)
+        {
+          $versionToUse = [System.IO.File]::ReadAllText($versionToUse)
+        }
+        BL-Broadcast-Deployment -sender "${{ env.BUILDOPS_EMAIL }}" `
+          -recipients ${{ fromJSON(env.environmentProperties).notificationSetting.release.recipients }} `
+          -smtpServer "${{ env.smtpServer }}" `
+          -versionNumber $versionToUse `
+          -environment "${{ fromJSON(env.environmentProperties).notificationSetting.release.environment }}" `
+          -actionType "${{ env.actionType }}" `
+          -maintenanceDuration "${{ fromJSON(env.environmentProperties).notificationSetting.release.duration }}" `
+          -imageAssetsPath "${{ env.IMAGE_ASSETS_PATH }}" `
+          -cc ${{ fromJSON(env.environmentProperties).notificationSetting.release.ccRecipients }} `
+          -jiraQuery $jiraQuery `
+          -jiraUserName "${{ env.INTERNALTOOLS_USERNAME }}" `
+          -jiraPassword "${{ secrets.INTERNALTOOLS_PASSWORD }}"
+      shell: powershell
+    - name: Notify
+      if: coalesce(inputs.environmentProperties.notificationSetting.repoNames, '') == '' && inputs.isHotfix == true
+      run: |-
+        $jiraQuery = [System.IO.File]::ReadAllText('${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.jiraQuery }}')
+        $versionToUse = '${{ fromJSON(env.environmentProperties).versionToUse }}'
+        if(Test-Path $versionToUse)
+        {
+          $versionToUse = [System.IO.File]::ReadAllText($versionToUse)
+        }
+        BL-Broadcast-Deployment -sender "${{ env.BUILDOPS_EMAIL }}" `
+          -recipients ${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.recipients }} `
+          -smtpServer "${{ env.smtpServer }}" `
+          -versionNumber $versionToUse `
+          -environment "${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.environment }}" `
+          -actionType "${{ env.actionType }}" `
+          -maintenanceDuration "${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.duration }}" `
+          -imageAssetsPath "${{ env.IMAGE_ASSETS_PATH }}" `
+          -cc ${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.ccRecipients }} `
+          -jiraQuery $jiraQuery `
+          -jiraUserName "${{ env.INTERNALTOOLS_USERNAME }}" `
+          -jiraPassword "${{ secrets.INTERNALTOOLS_PASSWORD }}"
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_notification-STORE:
+    name: Store start time ${{ parameters.environmentProperties.environmentName }}
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      isHotfix: "${{ inputs.isHotfix }}"
+      actionType: Start
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+      smtpServer: "${{ inputs.smtpServer }}"
+    if: ${{ inputs.actionType == 'Start' && coalesce(inputs.environmentProperties.validatorProperties, '') != '' && coalesce(inputs.environmentProperties.notificationSetting, '') != '' || coalesce(inputs.environmentProperties.validatorProperties, '') != '' }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Store
+      run: |-
+        $path = "${{ env.DATE_TIME_FILE_PATH }}"
+        $startTime = Get-Date -format "MM-dd-yyyy HH:mm:ss"
+        if(!(Test-Path -path $path))
+        {
+          New-Item -Path $path -ItemType Directory -Force
+        }
+        $startTimeFile = "$($path)\${{ fromJSON(env.environmentProperties).environmentName }}StartDateTime.txt"
+        if(!(Test-Path -path $startTimeFile))
+          New-Item -Path $path -Name "${{ fromJSON(env.environmentProperties).environmentName }}StartDateTime.txt" -ItemType File
+        Write-Host "Storing the start date and time..."
+        $filepath = [System.IO.File]::CreateText($startTimeFile)
+        $filepath.Write($startTime);
+        $filepath.Close()
+        Write-Host "Start date and time stored"
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_upgrade-build:
+    runs-on: ubuntu-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      batchProperty: '"${{ batchProperty }}"'
+      deployPool: "${{ inputs.deployPool }}"
+      smcServer: "${{ inputs.smcServer }}"
+      smcDatabase: "${{ inputs.smcDatabase }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    steps:
+#       # section was not transformed because it contains unsupported usage of the `each` syntax
+#       "${{ each dwServer in parameters.batchProperty.dwServers }}":
+#       - "${{ if ne(coalesce( dwServer.product ,''),'') }}":
+#         - "${{ if ne(coalesce( dwServer.databases,''),'') }}":
+#           - job: SELFAWAREUPGRADEDW
+#             displayName: Self Aware Upgrade DW
+#             steps:
+#             - checkout: none
+#             - task: PowerShell@2
+#               displayName: Upgrade DW
+#               inputs:
+#                 targetType: inline
+#                 pwsh: true
+#                 script: |
+#                   $ErrorActionPreference = "Stop"; #Make all errors terminating
+#
+#                   $pushGroups = "${{ dwServer.pushGroup }}"
+#                   $pushGroups = $pushGroups.Split(",")
+#                   BL-Upgrade-SSIS -ssisFileLocation "${{ fromJSON(env.batchProperty).dbScriptPathFin }}${{ env.PATH_SSIS_WAREHOUSE }}" `
+#                     -ssisExecutableLocation "${{ env.DTUTIL_EXE_PATH }}" `
+#                     -ssisExecutable "${{ env.DTUTIL_EXE }}" `
+#                     -product "${{ dwServer.product }}" `
+#                     -pushGroup $pushGroups `
+#                     -databases "${{ dwServer.databases }}" `
+#                     -smcServer "${{ env.smcServer }}" `
+#                     -smcDatabase "${{ env.smcDatabase }}" `
+#                     -throttleLimit "${{ dwServer.throttleLimit }}"
+#                   $pwshVersionFile = "${{ env.AZDO_STORE_DYNAMIC_PATH }}\FIN${{ dwServer.name }}${{ dwServer.findwID }}.txt"
+#         - "${{ if eq(coalesce( dwServer.databases,''),'') }}":
+#       - "${{ if eq(coalesce( dwServer.product ,''),'') }}":
+#         - job: UPGRADEDW${{ dwServer.id }}${{ dwServer.name }}
+#           displayName: Upgrade DW ${{ dwServer.id }} (${{ dwServer.name }})
+#           steps:
+#           - checkout: none
+#           - "${{ if ne(coalesce( dwServer.dbScriptPathFin,''),'') }}":
+#               displayName: 'Upgrade DW ${{ dwServer.id }} (${{ dwServer.name }}) '
+#                   $pwshVersion = [System.IO.File]::ReadAllText($pwshVersionFile)
+#
+#                   Invoke-Command -ComputerName ${{ dwServer.fqdn }} -ConfigurationName $pwshVersion -ScriptBlock{
+#                     BL-Upgrade-SSIS `
+#                       -ssisFileLocation "${{ dwServer.diskDrive }}:${{ dwServer.dbScriptPathFin }}\${{ fromJSON(env.environmentProperties).extractFolder }}${{ env.PATH_SSIS_WAREHOUSE }}" `
+#                       -ssisDestinationServer ${{ dwServer.fqdn }} `
+#                       -ssisDeploymentPath "${{ dwServer.folder }}" `
+#                       -ssisExecutableLocation "${{ env.DTUTIL_EXE_PATH }}" `
+#                       -ssisExecutable "${{ env.DTUTIL_EXE }}"
+#                   }
+#           - "${{ if ne(coalesce( parameters.batchProperty.dbScriptPathFin ,''),'') }}":
+#                 script: "$ErrorActionPreference = \"Stop\"; #Make all errors terminating\n\nBL-Upgrade-SSIS `\n  -ssisFileLocation \"${{ fromJSON(env.batchProperty).dbScriptPathFin }}${{ env.PATH_SSIS_WAREHOUSE }}\" `\n  -ssisDestinationServer ${{ dwServer.fqdn }} `\n  -ssisDeploymentPath \"${{ dwServer.folder }}\" `\n  -ssisExecutableLocation \"${{ env.DTUTIL_EXE_PATH }}\" `\n  -ssisExecutable \"${{ env.DTUTIL_EXE }}\"     "
+#       steps: []
+  azure_pipelines_templates_deployment_helper_stage_notification_2-NOTIFY${{ parameters.actionType }}:
+    name: Notify ${{ parameters.actionType }}
+    runs-on: windows-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      isHotfix: "${{ inputs.isHotfix }}"
+      actionType: Complete
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+      smtpServer: "${{ inputs.smtpServer }}"
+    if: ${{ coalesce(inputs.environmentProperties.notificationSetting, '') != '' && coalesce(inputs.environmentProperties.notificationSetting, '') != '' && coalesce(inputs.environmentProperties.notificationSetting, '') != '' || coalesce(inputs.environmentProperties.buildPageEnvironment, '') != '' }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Notify
+      if: coalesce(inputs.environmentProperties.notificationSetting.repoNames, '') != ''
+      run: |-
+        $repoMergedInfo = @()
+        $reposToCheck = @()
+        $repoNames = ${{ fromJSON(env.environmentProperties).notificationSetting.repoNames }}
+        foreach($repoName in $repoNames){
+          $reposToCheck += New-Object -TypeName PSObject -Property @{
+            repoName = $repoName
+            previousBuildFilePath = "${{ env.AZURE_DEVOPS_STORE }}\evaluator\${{ fromJSON(env.environmentProperties).notificationSetting.branchName }}-${{ fromJSON(env.environmentProperties).notificationSetting.prefix }}$($repoName)-prev.txt"
+            currentBuildFilePath = "${{ env.AZURE_DEVOPS_STORE }}\evaluator\${{ fromJSON(env.environmentProperties).notificationSetting.branchName }}-${{ fromJSON(env.environmentProperties).notificationSetting.prefix }}$($repoName).txt"
+          }
+        }
+        $repoMergedInfo = BL-Get-MergeInfo -authType Bearer `
+                      -repoInfo $reposToCheck `
+                      -azDoServerUrl "${{ github.server.url }}/${{ github.repository }}" `
+                      -projectId "${{ env.PROJECT_ID }}" `
+                      -branchName "${{ fromJSON(env.environmentProperties).notificationSetting.branchName }}" `
+                      -accessToken ${{ env.System_AccessToken }} `
+                      -apiVersion ${{ env.GIT_API_VERSION }} `
+                      -recordLimit 1000
+        $versionToUse = '${{ fromJSON(env.environmentProperties).versionToUse }}'
+        if(Test-Path $versionToUse)
+        {
+          $versionToUse = [System.IO.File]::ReadAllText($versionToUse)
+        }
+        BL-Broadcast-Deployment -sender "${{ env.BUILDOPS_EMAIL }}" `
+          -recipients ${{ fromJSON(env.environmentProperties).notificationSetting.recipients }} `
+          -smtpServer "${{ env.smtpServer }}" `
+          -versionNumber $versionToUse `
+          -environment "${{ fromJSON(env.environmentProperties).notificationSetting.environment }}" `
+          -actionType "${{ env.actionType }}" `
+          -maintenanceDuration "${{ fromJSON(env.environmentProperties).notificationSetting.duration }}" `
+          -imageAssetsPath "${{ env.IMAGE_ASSETS_PATH }}" `
+          -cc ${{ fromJSON(env.environmentProperties).notificationSetting.ccRecipients }} `
+          -repoMergedInfo $repoMergedInfo
+      shell: powershell
+    - name: Notify
+      if: coalesce(inputs.environmentProperties.notificationSetting.repoNames, '') == '' && inputs.isHotfix == false
+      run: |-
+        $jiraQuery = [System.IO.File]::ReadAllText('${{ fromJSON(env.environmentProperties).notificationSetting.release.jiraQuery }}')
+        $versionToUse = '${{ fromJSON(env.environmentProperties).versionToUse }}'
+        if(Test-Path $versionToUse)
+        {
+          $versionToUse = [System.IO.File]::ReadAllText($versionToUse)
+        }
+        BL-Broadcast-Deployment -sender "${{ env.BUILDOPS_EMAIL }}" `
+          -recipients ${{ fromJSON(env.environmentProperties).notificationSetting.release.recipients }} `
+          -smtpServer "${{ env.smtpServer }}" `
+          -versionNumber $versionToUse `
+          -environment "${{ fromJSON(env.environmentProperties).notificationSetting.release.environment }}" `
+          -actionType "${{ env.actionType }}" `
+          -maintenanceDuration "${{ fromJSON(env.environmentProperties).notificationSetting.release.duration }}" `
+          -imageAssetsPath "${{ env.IMAGE_ASSETS_PATH }}" `
+          -cc ${{ fromJSON(env.environmentProperties).notificationSetting.release.ccRecipients }} `
+          -jiraQuery $jiraQuery `
+          -jiraUserName "${{ env.INTERNALTOOLS_USERNAME }}" `
+          -jiraPassword "${{ secrets.INTERNALTOOLS_PASSWORD }}"
+      shell: powershell
+    - name: Notify
+      if: coalesce(inputs.environmentProperties.notificationSetting.repoNames, '') == '' && inputs.isHotfix == true
+      run: |-
+        $jiraQuery = [System.IO.File]::ReadAllText('${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.jiraQuery }}')
+        $versionToUse = '${{ fromJSON(env.environmentProperties).versionToUse }}'
+        if(Test-Path $versionToUse)
+        {
+          $versionToUse = [System.IO.File]::ReadAllText($versionToUse)
+        }
+        BL-Broadcast-Deployment -sender "${{ env.BUILDOPS_EMAIL }}" `
+          -recipients ${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.recipients }} `
+          -smtpServer "${{ env.smtpServer }}" `
+          -versionNumber $versionToUse `
+          -environment "${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.environment }}" `
+          -actionType "${{ env.actionType }}" `
+          -maintenanceDuration "${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.duration }}" `
+          -imageAssetsPath "${{ env.IMAGE_ASSETS_PATH }}" `
+          -cc ${{ fromJSON(env.environmentProperties).notificationSetting.hotfix.ccRecipients }} `
+          -jiraQuery $jiraQuery `
+          -jiraUserName "${{ env.INTERNALTOOLS_USERNAME }}" `
+          -jiraPassword "${{ secrets.INTERNALTOOLS_PASSWORD }}"
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_notification_2-STORE:
+    name: Store start time ${{ parameters.environmentProperties.environmentName }}
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      isHotfix: "${{ inputs.isHotfix }}"
+      actionType: Complete
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+      smtpServer: "${{ inputs.smtpServer }}"
+    if: ${{ inputs.actionType == 'Start' && coalesce(inputs.environmentProperties.validatorProperties, '') != '' && (inputs.actionType == 'Start' && coalesce(inputs.environmentProperties.validatorProperties, '') != '') && coalesce(inputs.environmentProperties.notificationSetting, '') != '' || coalesce(inputs.environmentProperties.buildPageEnvironment, '') != '' }}
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Store
+      run: |-
+        $path = "${{ env.DATE_TIME_FILE_PATH }}"
+        $startTime = Get-Date -format "MM-dd-yyyy HH:mm:ss"
+        if(!(Test-Path -path $path))
+        {
+          New-Item -Path $path -ItemType Directory -Force
+        }
+        $startTimeFile = "$($path)\${{ fromJSON(env.environmentProperties).environmentName }}StartDateTime.txt"
+        if(!(Test-Path -path $startTimeFile))
+          New-Item -Path $path -Name "${{ fromJSON(env.environmentProperties).environmentName }}StartDateTime.txt" -ItemType File
+        Write-Host "Storing the start date and time..."
+        $filepath = [System.IO.File]::CreateText($startTimeFile)
+        $filepath.Write($startTime);
+        $filepath.Close()
+        Write-Host "Start date and time stored"
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-build:
+    runs-on: ubuntu-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    steps:
+#       # section was not transformed because it contains unsupported usage of the `each` syntax
+#       "${{ each batch in parameters.environmentProperties.batches }}":
+#       - "${{ if ne(coalesce( batch.dbScriptPath,''),'') }}":
+#         - job: CUEDB${{ batch.number }}
+#           displayName: Cleanup DB Script
+#           steps:
+#           - checkout: none
+#           - task: PowerShell@2
+#             displayName: Post Cleanup DBScripts ${{ batch.number }}
+#             inputs:
+#               targetType: inline
+#               script: |
+#                 BL-Delete-Item -serverName localhost `
+#                   -paths (,"${{ batch.dbScriptPath }}") `
+#                   -removeMainDir $true
+#                   -paths (,"${{ batch.dbScriptPathCWS }}") `
+#                   -paths (,"${{ batch.dbScriptPathPR }}") `
+#                   -paths (,"${{ batch.dbScriptPathFin }}") `
+#                   -paths (,"${{ batch.dbScriptPathInt }}") `
+#       - "${{ if ne(coalesce( batch.dbScriptPathCWS,''),'') }}":
+#         - job: CUEDBCWS${{ batch.number }}
+#           displayName: Cleanup DB Script (CWS)
+#             displayName: Post Cleanup CWS DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.dbScriptPathPR,''),'') }}":
+#         - job: CUEDBPR${{ batch.number }}
+#           displayName: Cleanup DB Script (PR)
+#             displayName: Post Cleanup PR DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.dbScriptPathFin,''),'') }}":
+#         - job: CUEDBFIN${{ batch.number }}
+#           displayName: Cleanup DB Script (Fin)
+#             displayName: Post Cleanup FIN DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.dbScriptPathInt,''),'') }}":
+#         - job: CUEDBINT${{ batch.number }}
+#           displayName: Cleanup DB Script (Int)
+#             displayName: Post Cleanup INT DBScripts ${{ batch.number }}
+#       - "${{ if ne(coalesce( batch.webServers,''),'') }}":
+#         - "${{ each webServer in batch.webServers }}":
+#           - job: CUECWS${{ batch.number }}${{ webServer.name }}
+#             displayName: Cleanup Extract CWS (${{ webServer.name }})
+#             steps:
+#             - checkout: none
+#             - task: PowerShell@2
+#               displayName: Post Cleanup CWS ${{ batch.number }} (${{ webServer.name }})
+#               inputs:
+#                 targetType: inline
+#                 script: |
+#                   BL-Delete-Item -serverName ${{ webServer.fqdn }} `
+#                   BL-Delete-Item -serverName ${{ bpsServer.fqdn }} `
+#                   BL-Delete-Item -serverName ${{ prServer.fqdn }} `
+#                   BL-Delete-Item -serverName localhost `
+#                     -paths (,"${{ fromJSON(env.environmentProperties).sourceZIPPath }}\\${{ fromJSON(env.environmentProperties).extractFolder }}${{ interviewServer.name }}") `
+#                     -removeMainDir $true
+#                   BL-Delete-Item -serverName ${{ importAPIServer.fqdn }} `
+#                     -paths (,"${{ webServer.diskDrive }}:${{ webServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#       - "${{ if ne(coalesce( batch.bpsServers,''),'') }}":
+#         - "${{ each bpsServer in batch.bpsServers }}":
+#           - job: CUEBPS${{ batch.number }}${{ bpsServer.name }}
+#             displayName: Cleanup Extract BPS (${{ bpsServer.name }})
+#               displayName: Post Cleanup BPS ${{ batch.number }} (${{ bpsServer.name }})
+#                     -paths (,"${{ bpsServer.diskDrive }}:${{ bpsServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#       - "${{ if ne(coalesce( batch.prServers,''),'') }}":
+#         - "${{ each prServer in batch.prServers }}":
+#           - job: CUEPR${{ batch.number }}${{ prServer.name }}
+#             displayName: Cleanup Extract PR (${{ prServer.name }})
+#               displayName: Post Cleanup PR ${{ batch.number }} (${{ prServer.name }})
+#                     -paths (,"${{ prServer.diskDrive }}:${{ prServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#       - "${{ if ne(coalesce( batch.interviewServers,''),'') }}":
+#         - "${{ each interviewServer in batch.interviewServers }}":
+#           - job: CUEINTERVIEW${{ batch.number }}${{ interviewServer.name }}
+#             displayName: Cleanup Extract Interview (${{ interviewServer.name }})
+#               displayName: Post Cleanup Interview ${{ batch.number }} (${{ interviewServer.name }})
+#       - "${{ if ne(coalesce( batch.importAPIServers,''),'') }}":
+#         - "${{ each importAPIServer in batch.importAPIServers }}":
+#           - job: CUEAPI${{ importAPIServer.name }}
+#             displayName: Cleanup Extract API (${{ importAPIServer.name }})
+#               displayName: Post Cleanup API ${{ batch.number }} (${{ importAPIServer.name }})
+#                     -paths (,"${{ importAPIServer.diskDrive }}:${{ importAPIServer.sourcePath }}${{ fromJSON(env.environmentProperties).extractFolder }}") `
+#                     -removeMainDir $true
+#       steps: []
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-BACKUP:
+    name: Backup for BIT
+    runs-on: windows-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: coalesce(inputs.environmentProperties.backupLocation, '') != ''
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Code Backup for BIT
+      run: |-
+        BL-Copy-Code -serverName localhost `
+          -copyFrom "${{ fromJSON(env.environmentProperties).sourceZIPPath }}\" `
+          -copyTo "\\${{ fromJSON(env.environmentProperties).backupLocation.server }}\${{ fromJSON(env.environmentProperties).backupLocation.diskDrive }}$\${{ fromJSON(env.environmentProperties).backupLocation.path }}\" `
+          -filesToCopy ${{ env.BIT_ARTIFACTS }}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-TRANS:
+    name: Transition Ticket
+    runs-on: windows-latest
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: coalesce(inputs.environmentProperties.transition, '') != ''
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Transition
+      run: |-
+        $jiraQuery = [System.IO.File]::ReadAllText('${{ fromJSON(env.environmentProperties).transition.jql }}')
+        BL-Update-JiraTicket -mode "Transition" `
+          -jiraUsername "${{ env.INTERNALTOOLS_USERNAME }}" `
+          -jiraPassword "${{ secrets.INTERNALTOOLS_PASSWORD }}" `
+          -jql $jiraQuery `
+          -transitionName "${{ fromJSON(env.environmentProperties).transition.destination }}" `
+          -comment "${{ fromJSON(env.environmentProperties).transition.comment }}" `
+          -resolution "${{ fromJSON(env.environmentProperties).transition.resolution }}" `
+          -jiraURL "${{ env.JIRA_URL }}"
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-CODEVERSION:
+    name: TRIGGER CODE VERSION
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: inputs.environmentProperties.validatorProperties.codeVersion == 'Yes'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Code Version
+      run: Invoke-Command -computerName ${{ env.POST_DEPLOY_VALIDATOR_SERVER }} -ScriptBlock{ Start-ScheduledTask -TaskName "\DevOps Utility\Validate Code Version\${{ fromJSON(env.environmentProperties).environmentName }}"}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-DATABASEVERSION:
+    name: TRIGGER DATABASE VERSION
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: inputs.environmentProperties.validatorProperties.databaseVersion == 'Yes'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Database Version
+      run: Invoke-Command -computerName ${{ env.POST_DEPLOY_VALIDATOR_SERVER }} -ScriptBlock{ Start-ScheduledTask -TaskName "\DevOps Utility\Validate Database Version\${{ fromJSON(env.environmentProperties).environmentName }}"}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-SITEHEALTH:
+    name: TRIGGER SITE HEALTH
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: inputs.environmentProperties.validatorProperties.siteHealth == 'Yes'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Site Health
+      run: Invoke-Command -computerName ${{ env.POST_DEPLOY_VALIDATOR_SERVER }} -ScriptBlock{ Start-ScheduledTask -TaskName "\DevOps Utility\Validate Site Health\${{ fromJSON(env.environmentProperties).environmentName }}"}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-DATABASEUPGRADE:
+    name: TRIGGER DATABASE UPGRADE
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: inputs.environmentProperties.validatorProperties.databaseUpgrade == 'Yes'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Database Upgrade
+      run: Invoke-Command -computerName ${{ env.POST_DEPLOY_VALIDATOR_SERVER }} -ScriptBlock{ Start-ScheduledTask -TaskName "\DevOps Utility\Validate Database Upgrade\${{ fromJSON(env.environmentProperties).environmentName }}"}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-EMAILAPPROVAL:
+    name: TRIGGER EMAIL APPROVAL
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: inputs.environmentProperties.validatorProperties.emailApproval == 'Yes'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Email Approval
+      run: Invoke-Command -computerName ${{ env.POST_DEPLOY_VALIDATOR_SERVER }} -ScriptBlock{ Start-ScheduledTask -TaskName "\DevOps Utility\Validate Email Approval\${{ fromJSON(env.environmentProperties).environmentName }}"}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-UTILITYPROCESS:
+    name: TRIGGER UTILITY PROCESS
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: inputs.environmentProperties.validatorProperties.emailApproval == 'Yes'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Utility Process
+      run: Invoke-Command -computerName ${{ env.POST_DEPLOY_VALIDATOR_SERVER }} -ScriptBlock{ Start-ScheduledTask -TaskName "\DevOps Utility\Validate Utility Process\${{ fromJSON(env.environmentProperties).environmentName }}"}
+      shell: powershell
+  azure_pipelines_templates_deployment_helper_stage_postdeploy-DWVALIDATION:
+    name: TRIGGER VALIDATE DW PACKAGES
+    runs-on:
+      - self-hosted
+      - classic-us-deploy-pool
+    env:
+      APP_OFFLINE_FILE: app_offline.htm
+      APP_OFFLINE_PATH: D:\BambooUtil\
+      AZDO_STORE_DYNAMIC_PATH: D:\AzureDevOps-Store\dynamic
+      AZURE_DEVOPS_STORE: D:\AzureDevOps-Store
+      BAMBOO_SCRIPTS_PATH: D:\BambooUtil\BambooScripts
+      BEELINE_COMPONENT_ENABLED: false
+      BEE_PACT_FILE_EXISTS: false
+      BIT_ARTIFACTS: "'CWS.zip','PRClean.zip','Warehouse.zip'"
+      BPS_TEMP_DIRECTORY: C:\Users\{0}\Appdata\Local\Temp
+      BUILDOPS_EMAIL: BuildOps@beeline.com
+      BUILDOPS_MSTEAMS_EMAIL: 5a88bdd3.beelineco.onmicrosoft.com@amer.teams.ms
+      BUILDPAGE_TEMPLATE: D:\BambooUtil\ConfigSettings\BuildPageTemplate.xml
+      CONFLUENCE_URL: https://thehive.beeline.com
+      CONNECTION_TIMEOUT: 1800
+      CUTOFF_DAY_RC: Wednesday
+      CUTOFF_HOUR_RC: 10
+      CUTOFF_MINUTE_RC: 5
+      DATE_CURRENT_HOTFIX: D:\AzureDevOps-Store\dynamic\currenthotfixdate.txt
+      DATE_CURRENT_RELEASE: D:\AzureDevOps-Store\dynamic\currentreleasedate.txt
+      DATE_HOTFIX: D:\AzureDevOps-Store\dynamic\hotfixdate.txt
+      DATE_RELEASE: D:\AzureDevOps-Store\dynamic\releasedate.txt
+      DATE_TIME_FILE_PATH: D:\datetimepath
+      DBUP_DLL_LOCATION: D:\BambooUtil\DBUp
+      DBUP_DLL_SQLSERVER_LOCATION: C:\DBUp
+      DELAY_PERCENTAGE: 10
+      DOTNET_CONFIGURATION: Release
+      DOTNET_TARGET_FRAMEWORK: netcoreapp2.2
+      DTUTIL_EXE: dtutil
+      DTUTIL_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ESCROW_DOC_GENERATOR: ReplaceTextOpenXmlWordDocument.exe
+      ESCROW_DOC_GENERATOR_LOCATION: D:\BambooUtil\ReplaceTextOpenXmlWordDocument
+      ESCROW_JSON_FILENAME: escrowContent.json
+      ESCROW_PROJECT_PATH: D:\Bamboo_Artifacts\Escrow
+      EU_SMTP_SERVER: smtp.fra.beeline.com
+      EXCLUDE_FILETYPE_BPS: Beeline.Services.ProcessService.exe.config,bps-info.txt
+      EXCLUDE_FILETYPE_CWS: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_FILETYPE_PR: app_offline.htm,*.exe.config,*.svn
+      EXCLUDE_POST_DEPLOY_SCRIPTS: "'1.SET.sql','2.SyncAuditTables.sql','3.Update Terminology.sql'"
+      EXECUTE_DB_OBJECTS: 1
+      HTML_AGILITY_PACK: D:\BambooUtil\ConfigSettings\HtmlAgilityPack.dll
+      IDEAL_AVERAGE_MEMORY: 180
+      IDEAL_CPU_PERCENTAGE: 30
+      IMAGE_ASSETS_PATH: D:\BambooUtil\Assets\
+      INETPUB_ROOT_PATH: C:\inetpub\wwwroot\
+      INTERNALTOOLS_USERNAME: InternalTools_svc
+      ISDEPLOYMENTWIZARD_EXE: ISDeploymentWizard
+      ISDEPLOYMENTWIZARD_EXE_PATH: C:\Program Files\Microsoft SQL Server\130\DTS\Binn\
+      ITERATION_LIMIT: D:\AzureDevOps-Store\static\iterationlimit.txt
+      ITERATION_RETENTION: D:\AzureDevOps-Store\static\iterationretention.txt
+      JIRA_APPROVAL_INFO_PROP: D:\AzureDevOps-Store\dynamic\ticketInfo.properties
+      JIRA_FIELD_BUILD_STAMP: customfield_10370
+      JIRA_FIELD_SCHED_PROD_DATE: customfield_10057
+      JIRA_MAX_RESULT: 999
+      JIRA_QUERY_RC: "(status = 'Ready for Build' AND assignee = zz_operationservices AND 'Hotfix?' = No AND (Codebase = CWS OR Codebase = NULL))"
+      JIRA_QUERY_ST: assignee = zz_operationservices AND status = 'Ready for Build' AND 'Hotfix?' = Yes
+      JIRA_URL: https://jira.beeline.com
+      JQL_CANDIDATE: D:\AzureDevOps-Store\dynamic\jqlcandidate.txt
+      JQL_DATE_FORMAT: yyyy-MM-dd
+      JQL_HFREG: D:\AzureDevOps-Store\dynamic\jqlhfreg.txt
+      JQL_MAIN: D:\AzureDevOps-Store\dynamic\jqlmain.txt
+      JQL_SMOKETEST: D:\AzureDevOps-Store\dynamic\jqlsmoketest.txt
+      NETWORK_INETPUB_ROOT_PATH: "\\c$\\inetpub\\wwwroot\\"
+      NONOLTPPOSTDEPLOY_PATH: "\\WarehouseDB\\PostDeploy"
+      NON_OLTP_POSTDEPLOY_PATH: D:\BambooUtil\NonOLTPPostDeploy
+      NUMBER_OF_RETRY: 5
+      OLTP_POSTDEPLOY_PATH: D:\BambooUtil\OLTPPostDeploy
+      OPSVIEW_URL: https://opsview6.beeline.com
+      PATH_CODE_API: "\\Api.Host\\"
+      PATH_CODE_CANDIDATECOMPARE: "\\dist\\"
+      PATH_CODE_CWS: "\\PrecompiledBeeline\\"
+      PATH_CODE_PR: "\\PRClean\\"
+      PATH_DB_CWS: "\\PrecompiledBeeline\\DBScripts"
+      PATH_DB_PR: "\\PRClean\\DBScripts"
+      PATH_DB_SLA: "\\WarehouseDB\\SLAScripts"
+      PATH_DB_WAREHOUSE: "\\WarehouseDB\\DBScripts"
+      PATH_SSIS_INTEGRATION: "\\Integrations\\Integration.ispac"
+      PATH_SSIS_WAREHOUSE: "\\WarehouseDB\\CWSFinLoad"
+      POSTDEPLOY_PATH: "\\PrecompiledBeeline\\PostDeploy"
+      PROMOTE_SERVER_GAP_IN_SECONDS: 120
+      PRPOSTDEPLOY_PATH: "\\PRClean\\PostDeploy"
+      READY_FOR_BUILD_ID: 10015
+      RETRY_INTERVAL: 30
+      SERVICE_ACCOUNT: zz_BambooSVC_zz
+      SMC_EU_DATABASE: SMC_EU
+      SMC_EU_SERVER: utilsql2001.fra.beeline.com
+      SMC_US_DATABASE: SMC_Prod
+      SMC_US_SERVER: utilsql1001.jax.beeline.com
+      SSIS_DEVOPS_TOOLS_EXE_PATH: C:\Program Files\SSISDevOpsTools\
+      SYSTEM_MONITOR_CPU_SAMPLES: 24
+      SYSTEM_MONITOR_INTERVAL: 5
+      SYSTEM_MONITOR_WAITING_TIME: 180
+      US_SMTP_SERVER: smtp.jax.beeline.com
+      VERSION_DLL: Beeline.Core.dll
+      WAITING_TIME: 5
+      WEB_SERVER_PATTERN_TO_EXCLUDE: bps,util
+      ZIP_FILE_API: API.zip
+      ZIP_FILE_CANDIDATECOMPARE: CandidateCompare.zip
+      ZIP_FILE_CWS: CWS.zip
+      ZIP_FILE_INTEGRATION: Integrations
+      ZIP_FILE_INTERVIEW: BeelineApps.zip
+      ZIP_FILE_PR: PRClean.zip
+      ZIP_FILE_WAREHOUSE: Warehouse.zip
+      deployPool: "${{ inputs.deployPool }}"
+      environmentProperties: '"${{ fromJSON(inputs.environmentProperties) }}"'
+    if: inputs.environmentProperties.validatorProperties.dwValidation == 'Yes'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Validate DW Packages
+      run: Invoke-Command -computerName ${{ env.POST_DEPLOY_VALIDATOR_SERVER }} -ScriptBlock{ Start-ScheduledTask -TaskName "\DevOps Utility\Validate DW Packages\${{ fromJSON(env.environmentProperties).environmentName }}"}
+      shell: powershell
