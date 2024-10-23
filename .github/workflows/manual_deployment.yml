@@ -1,0 +1,68 @@
+name: Classic/BuildOpsUtil/Manual_Deployment
+on:
+  workflow_dispatch:
+    inputs:
+      isHotfix:
+        default: true
+        type: boolean
+        required: false
+      deployPool:
+        default: classic-us-deploy-pool
+        type: string
+        required: false
+      idealCPUPercentage:
+        default: "${{ env.IDEAL_CPU_PERCENTAGE }}"
+        type: string
+        required: false
+#   # workflow_dispatch only supports string, boolean, environment, and choice inputs
+#   name: environmentProperties
+#   type: object
+#   default:
+#     extractFolder: ProdCodeExtract
+#     sourceZIPPath: D:\Code\AzMain
+#     zipFolder: ZIP
+#     batches:
+#     - number: 1
+#       opsviewPool: classic-us-deploy-pool
+#       webServers:
+#       - fqdn: cwsmonitor101.jax.beeline.com
+#         name: cwsmonitor101
+#         iisRestart: false
+#         diskDrive: C
+#         folder: CWS
+#         sourcePath: "\\Source\\Prod\\"
+#         destinationPaths:
+#         - "\\Source\\Prod\\"
+#         servicesToCheck: IISADMIN,WAS,W3SVC
+env:
+  CODE_COVERAGE_SERVER: QAWEB111.jax.beeline.com
+  GIT_API_VERSION: '6.0'
+  HOTFIX_DAYS: "'SUNDAY','MONDAY','TUESDAY','WEDNESDAY'"
+  PACT_FLOW_BASE_URL: https://beeline.pactflow.io
+  PIPELINE_API_VERSION: 6.0-preview
+  POST_DEPLOY_VALIDATOR_SERVER: CWSMONITOR101.jax.beeline.com
+  PROJECT_ID: 3dc85e6b-b1cb-4003-a0e5-856c1f75d8b1
+  PR_CLEAN_MAIN: 'false'
+  PR_CLEAN_SMOKETEST: 'false'
+  PR_UPGRADE_MAIN: '16.0'
+  PR_UPGRADE_RC: '16.0'
+  PR_UPGRADE_SMOKETEST: '16.0'
+  RELEASE_PROD_BUILD_DAY: THURSDAY
+  SSH_CHECKOUT: 'false'
+  SSH_CRED: D:\BambooUtil\ConfigSettings\cred.txt
+  SSH_USER: D:\BambooUtil\ConfigSettings\user.txt
+  VERACODE_PUBLISH_TIMEOUT: '180'
+  VERACODE_SCAN_TIMEOUT: '1800'
+  VERSION_CANDIDATE: 21.13.2103.2518
+  VERSION_MASTER: 21.13.2103.2518
+  WEEKLY_PULL_REQ_CHANNEL: https://beelineco.webhook.office.com/webhookb2/09e677f1-3732-4c86-9638-cc15530af8dc@3289e021-493f-463c-bfc1-feb3ba494685/IncomingWebhook/d3bdd5dfd7b944c2b27b102541ea2cd8/468fe4e6-50df-434a-95da-0ca3493c6f4d
+  WEEKLY_PULL_REQ_EMAIL: "'e52559ae.beelineco.onmicrosoft.com@amer.teams.ms'"
+jobs:
+  azure_pipelines_templates_deployment:
+    name: azure_pipelines_templates_deployment
+    uses: "./.github/workflows/azure_pipelines_templates_deployment.yml"
+    with:
+      isHotfix: "${{ parameters.isHotfix }}"
+      deployPool: "${{ parameters.deployPool }}"
+      idealCPUPercentage: "${{ parameters.idealCPUPercentage }}"
+      environmentProperties: '"${{ parameters.environmentProperties }}"'
