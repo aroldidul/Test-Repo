@@ -1,0 +1,32 @@
+name: pipelines_modules_pact_publish
+inputs:
+  providerName:
+    required: false
+    type: string
+  consumerName:
+    required: false
+    type: string
+  pactFilePath:
+    required: false
+    type: string
+runs:
+  using: composite
+  steps:
+  - name: Upload ${{inputs.providerName}} ${{inputs.consumerName}} Pact File
+    run: |-
+      output=$(curl -v -X PUT \-H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${{ secrets.pact-publish-token }}" \
+      -d@${{inputs.pactFilePath}} \
+      https://beeline.pactflow.io/pacts/provider/${{inputs.providerName}}/consumer/${{inputs.consumerName}}/version/${{ github.sha }})
+
+      echo "$output"
+      echo "${{inputs.pactFilePath}}"
+    shell: bash
+  - name: Tag ${{inputs.consumerName}} Pact
+    run: |-
+      output=$(curl -s --show-error -X PUT \-H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${{ secrets.pact-publish-token }}" \
+      https://beeline.pactflow.io/pacticipants/${{inputs.consumerName}}/versions/${{ github.sha }}/tags/${{ github.ref }})
+
+      echo "$output"
+    shell: bash
