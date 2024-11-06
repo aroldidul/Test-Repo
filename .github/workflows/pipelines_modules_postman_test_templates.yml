@@ -1,0 +1,484 @@
+# Environment variables defined in a calling workflow are not accessible to this reusable workflow. Refer to the documentation for further details on this limitation.
+name: pipelines_modules_postman_test_templates
+on:
+  workflow_call:
+    inputs:
+      graphqlUrl:
+        required: false
+        type: string
+      baseUrl:
+        required: false
+        type: string
+      qa236ClientSecret:
+        required: false
+        type: string
+      qa236UserPassword:
+        required: false
+        type: string
+      qa230ClientSecret:
+        required: false
+        type: string
+      qa230UserPassword:
+        required: false
+        type: string
+jobs:
+  pipelines_modules_azure_pipelines_integration_test-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: searchJobTitlesLATEST
+      postmanCollectionFileName: searchJobTitlesLATEST.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_2-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: QuickRequestAutomation
+      postmanCollectionFileName: QuickRequestAutomation.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_3-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: RequestTemplate
+      postmanCollectionFileName: RequestTemplate.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_4-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: RequestTypes
+      postmanCollectionFileName: RequestTypes.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_5-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: WorkLocations
+      postmanCollectionFileName: WorkLocations.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_6-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: ApolloGateway
+      postmanCollectionFileName: ApolloGateway.IntegrationTest.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_7-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: Approvals
+      postmanCollectionFileName: DGX.Automation.Approvals.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_8-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: Assignments
+      postmanCollectionFileName: DGX.Automation.Assignments.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_9-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: Candidates
+      postmanCollectionFileName: DGX.Automation.Candidates.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_10-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: Configuration
+      postmanCollectionFileName: DGX.Automation.Configuration.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_11-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: GlobalSearch
+      postmanCollectionFileName: DGX.Automation.GlobalSearch.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_12-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: MilestonePayments
+      postmanCollectionFileName: DGX.Automation.MilestonePayments.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_13-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: MissingTimesheets
+      postmanCollectionFileName: DGX.Automation.MissingTimesheets.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_14-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: MyDataRequests
+      postmanCollectionFileName: DGX.Automation.MyDataRequests.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_15-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: MyDataAssignments
+      postmanCollectionFileName: DGX.Automation.MyDataAssignments.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_16-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: MyDataProjects
+      postmanCollectionFileName: DGX.Automation.MyDataProjects.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa230ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa230UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_17-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: MyDataSows
+      postmanCollectionFileName: DGX.Automation.MyDataSows.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_18-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: QuickReports
+      postmanCollectionFileName: DGX.Automation.QuickReports.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_19-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: TimeAndExpense
+      postmanCollectionFileName: DGX.Automation.TimeAndExpense.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
+  pipelines_modules_azure_pipelines_integration_test_20-${{ parameters.jobName }}:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: |-
+        cd test/postman/integration
+        sudo npm install -g newman
+        newman run "${{ env.postmanCollectionFileName }}" \
+          -e ../$(postman-environment-file-name) \
+          --env-var "clientSecret=${{ env.integrationClientSecret }}" \
+          --env-var "password=${{ env.integrationUserPassword }}" \
+          --env-var "graphqlUrl=${{ env.graphqlUrl }}" \
+          --env-var "baseUrl=${{ env.baseUrl }}" \
+          --bail
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    env:
+      jobName: AdditionalApprovals
+      postmanCollectionFileName: DGX.Automation.AdditionalApprovals.postman_collection.json
+      graphqlUrl: "${{ inputs.graphqlUrl }}"
+      baseUrl: "${{ inputs.baseUrl }}"
+      integrationClientSecret: "${{ inputs.qa236ClientSecret }}"
+      integrationUserPassword: "${{ inputs.qa236UserPassword }}"
