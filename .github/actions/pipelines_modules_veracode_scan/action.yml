@@ -1,0 +1,79 @@
+name: pipelines_modules_veracode_scan
+inputs:
+  sourceFolder:
+    required: false
+    type: string
+  veracodeScaToken:
+    required: false
+    type: string
+  veracodeApiId:
+    required: false
+    type: string
+  veracodeApiSecret:
+    required: false
+    type: string
+runs:
+  using: composite
+  steps:
+  - name: Veracode SCA - Agent-Based Scan
+    env:
+      SRCCLR_API_TOKEN: "${{ inputs.veracodeScaToken }}"
+    run: curl -sSL https://download.sourceclear.com/ci.sh | bash -s -- scan . --update-advisor --loud
+    shell: bash
+  # The following script preserves the globbing behavior of the CopyFiles task.
+  # Refer to this transformer's documentation for an alternative that will work in simple cases.
+  - name: Copy 'src' Files
+    uses: actions/github-script@v7.0.0
+    env:
+      TARGET_FOLDER: "${{ runner.temp }}/veracode-artifacts"
+    with:
+      github-token: "${{ secrets.GITHUB_TOKEN }}"
+      script: |-
+        const fs = require('fs').promises
+        const path = require('path')
+        const target = path.resolve(process.env.TARGET_FOLDER)
+        process.chdir(process.env.SOURCE_FOLDER || '.')
+        if (process.env.CLEAN_TARGET_FOLDER === 'true') await io.rmRF(target)
+        const flattenFolders = process.env.FLATTEN_FOLDERS === 'true'
+        const options = {force: process.env.OVERWRITE === 'true'}
+        const globber = await glob.create(process.env.CONTENTS || '**')
+        for await (const file of globber.globGenerator()) {
+          if ((await fs.lstat(file)).isDirectory()) continue
+          const filename = flattenFolders ? path.basename(file) : file.substring(process.cwd().length)
+          const dest = path.join(target, filename)
+          await io.mkdirP(path.dirname(dest))
+          await io.cp(file, dest, options)
+        }
+  # The following script preserves the globbing behavior of the CopyFiles task.
+  # Refer to this transformer's documentation for an alternative that will work in simple cases.
+  - name: Copy 'Package'  Files
+    uses: actions/github-script@v7.0.0
+    env:
+      TARGET_FOLDER: "${{ runner.temp }}/veracode-artifacts"
+    with:
+      github-token: "${{ secrets.GITHUB_TOKEN }}"
+      script: |-
+        const fs = require('fs').promises
+        const path = require('path')
+        const target = path.resolve(process.env.TARGET_FOLDER)
+        process.chdir(process.env.SOURCE_FOLDER || '.')
+        if (process.env.CLEAN_TARGET_FOLDER === 'true') await io.rmRF(target)
+        const flattenFolders = process.env.FLATTEN_FOLDERS === 'true'
+        const options = {force: process.env.OVERWRITE === 'true'}
+        const globber = await glob.create(process.env.CONTENTS || '**')
+        for await (const file of globber.globGenerator()) {
+          if ((await fs.lstat(file)).isDirectory()) continue
+          const filename = flattenFolders ? path.basename(file) : file.substring(process.cwd().length)
+          const dest = path.join(target, filename)
+          await io.mkdirP(path.dirname(dest))
+          await io.cp(file, dest, options)
+        }
+  - name: Zip files
+    run: 7z a ${{ runner.temp }}/scan-files.zip ./${{ runner.temp }}/veracode-artifacts/*
+    shell: bash
+  - name: Pipeline Scan
+    run: |-
+      curl -sSO https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
+      unzip -o pipeline-scan-LATEST.zip
+      java -jar pipeline-scan.jar -vid ${{ inputs.veracodeApiId }} -vkey ${{ inputs.veracodeApiSecret }} -f ${{ runner.temp }}/scan-files.zip -id true || true
+    shell: bash
