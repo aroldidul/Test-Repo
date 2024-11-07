@@ -1,0 +1,84 @@
+name: Integration/Integrations_Dashboard/integrations-dashboard-infrastructure
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - "*"
+    - "!README.md"
+env:
+  dashboardName: dash-integrations-p-scus
+  isProduction: true
+  location: southcentralus
+  resourceGroupName: rg-integration-dashboard-scus
+  resourceGroupNameWorkbook: rg-integration-workbook-scus
+  resourceGroupTags: UPDATE ME
+  serviceConnectionDe: de-prod-integrationedge-Integration
+  serviceConnectionUs: us-prod-integrationedge-Integration
+  sharedResourceGroupDe: rg-integrations-p-dewc
+  sharedResourceGroupUs: rg-integrations-p-scus
+jobs:
+  create_resource_group_workbook:
+    name: Create workbook resource group
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Create resource group task
+      uses: azure/login@v1.6.0
+      with:
+        creds: "${{ secrets.AZURE_CREDENTIALS }}"
+        enable-AzPSSession: true
+    - name: Create resource group task
+      uses: azure/powershell@v1.4.0
+      with:
+        inlineScript: New-AzResourceGroup -Name ${{ env.resourceGroupNameWorkbook }} -Location '${{ env.location }}' -Tag @{${{ env.resourceGroupTags }}} -Force
+        errorActionPreference: Stop
+        failOnStandardError: false
+        azPSVersion: latest
+  create_client_gateway_workbook:
+    name: Create client gateway workbook instance
+    needs:
+    - create_resource_group_workbook
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Deploying arm template
+      uses: azure/login@v1.6.0
+      with:
+        creds: "${{ secrets.AZURE_CREDENTIALS }}"
+        enable-AzPSSession: true
+    - name: Deploying arm template
+      uses: azure/powershell@v1.4.0
+      with:
+        inlineScript: |-
+          $timestamp = Get-Date -Format o | ForEach-Object { $_ -replace ":", "." } | ForEach-Object { $_ -replace "\+", "-" }
+          $name = ("${{ env.resourceGroupNameWorkbook }}-" + $timestamp)
+          New-AzResourceGroupDeployment -Name $name -ResourceGroupName ${{ env.resourceGroupNameWorkbook }} -Mode Complete -Force -TemplateFile "templates/client-gateway-workbook.json" -TemplateParameterObject @{workbookDisplayName='Client API Overview Workbook';}
+        errorActionPreference: Stop
+        failOnStandardError: false
+        azPSVersion: latest
+  create_supplier_gateway_workbook:
+    name: Create supplier gateway workbook instance
+    needs:
+    - create_client_gateway_workbook
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Deploying supplier gateway arm template
+      uses: azure/login@v1.6.0
+      with:
+        creds: "${{ secrets.AZURE_CREDENTIALS }}"
+        enable-AzPSSession: true
+    - name: Deploying supplier gateway arm template
+      uses: azure/powershell@v1.4.0
+      with:
+        inlineScript: |-
+          $timestamp = Get-Date -Format o | ForEach-Object { $_ -replace ":", "." } | ForEach-Object { $_ -replace "\+", "-" }
+          $name = ("${{ env.resourceGroupNameWorkbook }}-supplier-gateway-workbook")
+          New-AzResourceGroupDeployment -Name $name -ResourceGroupName ${{ env.resourceGroupNameWorkbook }} -Mode Incremental -Force -TemplateFile "templates/supplier-gateway-workbook.json" -TemplateParameterObject @{workbookDisplayName='Supplier Gateway API Overview Workbook';}
+        errorActionPreference: Stop
+        failOnStandardError: false
+        azPSVersion: latest
