@@ -1,0 +1,91 @@
+name: Toggle BPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticketnumber:
+        description: 'Ticket Number'
+        required: true
+      toggleBPS: 
+        description: 'Toggle Mode'
+        default: Status
+        options:
+        - Start
+        - Stop
+        - Restart
+        - Status
+      restartWhat:
+        description: 'Toggle BPS Server or Service?'
+        default: SERVICE
+        options:
+        - SERVICE
+        - SERVER
+      bpsName:
+        description: 'BPS Service/Server name'
+        type: string
+        required: true
+      dataCenter:
+        description: 'Data Center'
+        default: US
+        options:
+        - US
+        - EU
+
+jobs:
+  ToggleBPS:
+    name: ${{ inputs.toggleMode }} ${{ inputs.restartWhat }}
+    runs-on: ${{ inputs.dataCenter == 'US' && 'bee-us-deploy-pool' || 'bee-eu-deploy-pool' }}
+
+    env:
+      SMC_SERVER: ${{ inputs.dataCenter == 'US' && 'smc_prod.db.jax.beeline.com' || 'smc_eu.db.fra.beeline.com' }}
+      SMC_DB: ${{ inputs.dataCenter == 'US' && 'SMC_Prod' || 'SMC_EU' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Toggle BPS (Server Mode)
+        if: ${{ inputs.restartWhat == 'SERVER' }}
+        run: |
+          $dbQuery = "SELECT DISTINCT sp.ServerFQDN, spu.ServiceName
+                      FROM ServerProfileUtility spu
+                      INNER JOIN ServerProfile sp ON spu.ServerProfileID = sp.ServerProfileID
+                      INNER JOIN ServerType t ON spu.ServerTypeID = t.ServerTypeID
+                      WHERE t.ServerTypeName = 'BPS' AND sp.ServerFQDN = '${{ inputs.bpsName }}'"
+
+          $connectionString = "server=${{ env.SMC_SERVER }};database=${{ env.SMC_DB }};trusted_connection=true;Connection Timeout=1800;"
+          $results = BL-Get-DbData -query $dbQuery -connectionString $connectionString
+
+          if ($results.Count -le 0) {
+            Write-Host "Unable to find the BPS Service(s) for ${{ inputs.bpsName }}."
+            exit 1
+          }
+
+          BL-Toggle-Service -toggleMode ${{ inputs.toggleMode }} `
+            -serviceNames $results.ServiceName `
+            -serverName "${{ inputs.bpsName }}"
+
+        shell: pwsh
+
+      - name: Toggle BPS (Service Mode)
+        if: ${{ inputs.restartWhat == 'SERVICE' }}
+        run: |
+          $dbQuery = "SELECT DISTINCT sp.ServerFQDN, spu.ServiceName
+                      FROM ServerProfileUtility spu
+                      INNER JOIN ServerProfile sp ON spu.ServerProfileID = sp.ServerProfileID
+                      INNER JOIN ServerType t ON spu.ServerTypeID = t.ServerTypeID
+                      WHERE t.ServerTypeName = 'BPS' AND spu.ServiceName = '${{ inputs.bpsName }}'"
+
+          $connectionString = "server=${{ env.SMC_SERVER }};database=${{ env.SMC_DB }};trusted_connection=true;Connection Timeout=1800;"
+          $results = BL-Get-DbData -query $dbQuery -connectionString $connectionString
+
+          if ($null -eq $results.ServerFQDN) {
+            Write-Host "Unable to find the BPS Server for ${{ inputs.bpsName }}."
+            exit 1
+          }
+
+          BL-Toggle-Service -toggleMode ${{ inputs.toggleMode }} `
+            -serviceNames @("${{ inputs.bpsName }}") `
+            -serverName $results.ServerFQDN
+
+        shell: pwsh
