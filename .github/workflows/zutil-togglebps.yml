@@ -9,6 +9,7 @@ on:
       toggleBPS: 
         description: 'Toggle Mode'
         default: Status
+        type: choice
         options:
         - Start
         - Stop
@@ -17,6 +18,7 @@ on:
       restartWhat:
         description: 'Toggle BPS Server or Service?'
         default: SERVICE
+        type: choice
         options:
         - SERVICE
         - SERVER
@@ -27,6 +29,7 @@ on:
       dataCenter:
         description: 'Data Center'
         default: US
+        type: choice
         options:
         - US
         - EU
