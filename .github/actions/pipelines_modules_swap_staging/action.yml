@@ -1,0 +1,22 @@
+name: pipelines_modules_swap_staging
+inputs:
+  webApp:
+    required: false
+    type: string
+  serviceConnection:
+    required: false
+    type: string
+  resourceGroup:
+    required: false
+    type: string
+runs:
+  using: composite
+  steps:
+  - name: Release ${{ inputs.webApp }}
+    uses: azure/login@v1.6.0
+    with:
+      creds: "${{ secrets.AZURE_CREDENTIALS }}"
+  - name: Release ${{ inputs.webApp }}
+    uses: azure/cli@v1.0.8
+    with:
+      inlineScript: az webapp deployment slot swap --name "${{ inputs.webApp }}" --resource-group "${{ inputs.resourceGroup }}" --subscription "${{ inputs.serviceConnection }}" --slot "staging" --preserve-vnet false

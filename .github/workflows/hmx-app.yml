@@ -1,0 +1,519 @@
+name: HMX/UI/hmx-app
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - "*"
+    - "!.gitignore"
+env:
+  BROWSERSTACK_USERNAME: beeline_cDzt8dLiAhL
+  acrEU: beelinecreuno.azurecr.io
+  acrServiceConnectionEU: beelinecreuno-acr-eu-HMX
+  acrServiceConnectionUS: beelinecrussc-acr-us-HMX
+  acrUS: beelinecrussc.azurecr.io
+  environmentLevel: qa
+  euDockerAppServiceName: bln-app-hmx-api-weu
+  euPrimaryResourceGroup: rg-hmx-dewc
+  euSubscription: de-prod-hmx-HMX
+  hmxHmUser: hmxhmuser@example.com
+  imagePullSecret: beeline-acr-secret
+  imageRepository: hmx-service
+  k8sServiceConnection: bkc-pr-us-01-hmx-HMX
+  nodeVersion: 20.17.0
+  npm_config_cache: "${{ runner.workspace }}/.npm"
+  shouldDeploy: "$[ne(variables['Build.Reason'], 'PullRequest')]"
+  siteName: qa230
+  smartBuyerUsername: hmxsupport
+  sonarCloudServiceConnection: SonarCloud-HMX
+  tag: "${{ github.run_id }}"
+  usDockerAppServiceName: bln-app-hmx-api-scus
+  usPrimaryResourceGroup: rg-hmx-scus
+  usSubscription: us-prod-hmx-HMX
+  vmImageName: ubuntu-latest
+  workingDirectoryApollo: "${{ github.workspace }}/api"
+  workingDirectoryUi: "${{ github.workspace }}/ui"
+jobs:
+  test-testUI:
+    name: Test UI
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Set Node Version
+      uses: actions/setup-node@v4.0.0
+      with:
+        node-version: 18.17.0
+#     # This item has no matching transformer
+#     - task: Cache@2
+#       inputs:
+#         key: npm | "${{ runner.os }}" | ${{ env.workingDirectoryUi }}/package-lock.json
+#         restoreKeys: 'npm | "${{ runner.os }}"
+#
+#           '
+#         path: "${{ env.npm_config_cache }}"
+#       displayName: Cache npm
+#     # This item has no matching transformer
+#     - task: npmAuthenticate@0
+#       displayName: Authenticate NPM
+#       inputs:
+#         workingFile: "${{ env.workingDirectoryUi }}/.npmrc"
+    - name: npm ci
+      run: npm ci
+      working-directory: "${{ env.workingDirectoryUi }}"
+    - name: npm run lint-ci
+      run: npm run lint-ci
+      working-directory: "${{ env.workingDirectoryUi }}"
+    - name: npm run test:pact
+      run: npm run test:pact
+      working-directory: "${{ env.workingDirectoryUi }}"
+    # The following script preserves the globbing behavior of the CopyFiles task.
+    # Refer to this transformer's documentation for an alternative that will work in simple cases.
+    - uses: actions/github-script@v7.0.0
+      env:
+        TARGET_FOLDER: "${{ runner.temp }}"
+        CONTENTS: "**/pacts/**.json"
+      with:
+        github-token: "${{ secrets.GITHUB_TOKEN }}"
+        script: |-
+          const fs = require('fs').promises
+          const path = require('path')
+          const target = path.resolve(process.env.TARGET_FOLDER)
+          process.chdir(process.env.SOURCE_FOLDER || '.')
+          if (process.env.CLEAN_TARGET_FOLDER === 'true') await io.rmRF(target)
+          const flattenFolders = process.env.FLATTEN_FOLDERS === 'true'
+          const options = {force: process.env.OVERWRITE === 'true'}
+          const globber = await glob.create(process.env.CONTENTS || '**')
+          for await (const file of globber.globGenerator()) {
+            if ((await fs.lstat(file)).isDirectory()) continue
+            const filename = flattenFolders ? path.basename(file) : file.substring(process.cwd().length)
+            const dest = path.join(target, filename)
+            await io.mkdirP(path.dirname(dest))
+            await io.cp(file, dest, options)
+          }
+    - uses: actions/upload-artifact@v4.1.0
+    - uses: "./.github/actions/pipelines_modules_pact_publish"
+      with:
+        providerName: ResumeVisualizerApollo
+        consumerName: UI
+        pactFilePath: "${{ env.workingDirectoryUi }}/pacts/UI-ResumeVisualizerApollo.json"
+  veracode-VeracodeUI:
+    name: Veracode Scan UI
+    needs:
+    - test-testUI
+    runs-on: ubuntu-latest
+    if: env.shouldDeploy == 'false'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - uses: "./.github/actions/pipelines_modules_veracode_scan"
+      with:
+        sourceFolder: "${{ env.workingDirectoryUi }}"
+        veracodeScaToken: "${{ secrets.veracodeScaToken }}"
+        veracodeApiId: "${{ secrets.veracodeApiId }}"
+        veracodeApiSecret: "${{ secrets.veracodeApiSecret }}"
+  veracode-VeracodeAPI:
+    name: Veracode Scan API
+    needs:
+    - test-testUI
+    runs-on: ubuntu-latest
+    if: env.shouldDeploy == 'false'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - uses: "./.github/actions/pipelines_modules_veracode_scan"
+      with:
+        sourceFolder: "${{ env.workingDirectoryApollo }}"
+        veracodeScaToken: "${{ secrets.veracodeScaToken }}"
+        veracodeApiId: "${{ secrets.veracodeApiId }}"
+        veracodeApiSecret: "${{ secrets.veracodeApiSecret }}"
+  build-BuildDockerUs:
+    env:
+      DOCKER_REGISTRY:
+      DOCKER_USERNAME:
+    name: Docker Build US
+    needs:
+    - test-testUI
+    runs-on: ubuntu-latest
+    if: needs.test-testUI.result == 'success' && env.shouldDeploy == 'true'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - uses: "./.github/actions/pipelines_modules_docker_build"
+      with:
+        serviceConnection: "${{ env.acrServiceConnectionUS }}"
+        registryUrl: "${{ env.acrUS }}"
+        serviceName: hmx-service
+        componentLibraryToken: "${{ secrets.COMPONENT_LIBRARY_TOKEN }}"
+        appInsightsKey: 3cdfcde8-da46-4996-acc3-09790681a2e2
+        isLatest: true
+        workingDirectoryUi: "${{ env.workingDirectoryUi }}"
+        sharepointCliendId: "${{ secrets.sharepointCliendId }}"
+        sharepointClientSecret: "${{ secrets.sharepointClientSecret }}"
+        sharepointScope: "${{ secrets.sharepointScope }}"
+        sharepointTenantId: "${{ secrets.sharepointTenantId }}"
+    - uses: actions/upload-artifact@v4.1.0
+      with:
+        name: manifests
+        path: manifests
+  build-BuildDockerEu:
+    env:
+      DOCKER_REGISTRY:
+      DOCKER_USERNAME:
+    name: Docker Build EU
+    needs:
+    - test-testUI
+    runs-on: ubuntu-latest
+    if: needs.test-testUI.result == 'success' && env.shouldDeploy == 'true'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - uses: "./.github/actions/pipelines_modules_docker_build"
+      with:
+        serviceConnection: "${{ env.acrServiceConnectionEU }}"
+        registryUrl: "${{ env.acrEU }}"
+        serviceName: hmx-service
+        componentLibraryToken: "${{ secrets.COMPONENT_LIBRARY_TOKEN }}"
+        appInsightsKey: efeb32e6-77f4-4666-bd56-e440abb663e1
+        isLatest: true
+        workingDirectoryUi: "${{ env.workingDirectoryUi }}"
+        sharepointCliendId: "${{ secrets.sharepointCliendId }}"
+        sharepointClientSecret: "${{ secrets.sharepointClientSecret }}"
+        sharepointScope: "${{ secrets.sharepointScope }}"
+        sharepointTenantId: "${{ secrets.sharepointTenantId }}"
+  sonar-sonarUI:
+    name: Sonar UI
+    needs:
+    - build-BuildDockerUs
+    - build-BuildDockerEu
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - task: SonarCloudPrepare@2
+#       inputs:
+#         SonarCloud: "${{ env.sonarCloudServiceConnection }}"
+#         organization: beelinesonarcloud
+#         scannerMode: CLI
+#         configMode: file
+#         configFile: "${{ env.workingDirectoryUi }}/sonar-project.properties"
+#     # This item has no matching transformer
+#     - task: SonarCloudAnalyze@2
+#       displayName: Sonar Analyze
+#     # This item has no matching transformer
+#     - task: SonarCloudPublish@2
+#       displayName: Sonar Publish Results
+#     # This item has no matching transformer
+#     - task: sonarcloud-buildbreaker@2
+#       displayName: Sonar Quality Gate Check
+#       inputs:
+#         SonarCloud: "${{ env.sonarCloudServiceConnection }}"
+#         organization: beelinesonarcloud
+  sonar-sonarAPI:
+    name: Sonar API
+    needs:
+    - build-BuildDockerUs
+    - build-BuildDockerEu
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - run: npm install
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    - name: npm run test
+      run: npm run test
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    - name: See contents of test folder
+      run: ls ${{ env.Common_TestResultsDirectory }}
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    - name: Working Directory Contents
+      run: ls ${{ env.workingDirectoryApollo }}
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    - name: Create Folder
+      run: mkdir -p ${{ env.workingDirectoryApollo }}/test/TestResults/
+    - name: Move Coverage Report to Well Known Directory
+      run: mv ${{ env.workingDirectoryApollo }}/coverage ${{ env.workingDirectoryApollo }}/test/TestResults/
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    - name: Move junit
+      run: mv ${{ env.workingDirectoryApollo }}/junit.xml ${{ env.workingDirectoryApollo }}/test/TestResults/
+      working-directory: "${{ env.workingDirectoryApollo }}"
+    - name: Publish test results
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action@v2.12.0
+      with:
+        junit_files: "**/junit.xml"
+    - name: Upload Coverage Reports
+      uses: actions/upload-artifact@v4.1.0
+      with:
+        name: coverage-api
+        path: "${{ env.workingDirectoryApollo }}/test/TestResults"
+#     # This item has no matching transformer
+#     - task: SonarCloudPrepare@2
+#       displayName: Prepare Sonar
+#       inputs:
+#         SonarCloud: "${{ env.sonarCloudServiceConnection }}"
+#         organization: beelinesonarcloud
+#         scannerMode: CLI
+#         configMode: file
+#         cliProjectKey: hmx-apollo-gateway
+#         configFile: "${{ env.workingDirectoryApollo }}/sonar-project.properties"
+#         extraProperties: 'sonar.javascript.lcov.reportPaths=${{ runner.workspace }}/coverage-api/coverage/lcov.info
+#
+#           '
+    - uses: actions/download-artifact@v4.1.0
+      with:
+        name: coverage-api
+#     # This item has no matching transformer
+#     - task: SonarCloudAnalyze@2
+#       displayName: Sonar Analyze
+#     # This item has no matching transformer
+#     - task: SonarCloudPublish@2
+#       displayName: Sonar Publish Results
+#     # This item has no matching transformer
+#     - task: sonarcloud-buildbreaker@2
+#       displayName: Sonar Quality Gate Check
+#       inputs:
+#         SonarCloud: "${{ env.sonarCloudServiceConnection }}"
+#         organization: beelinesonarcloud
+  publishCodeCoverage-publishCodeCoverage:
+    name: Publish Code Coverage
+    needs:
+    - test-testUI
+    - sonar-sonarUI
+    - sonar-sonarAPI
+    runs-on: ubuntu-latest
+    if: needs.sonar-sonarAPI.result == 'success' && needs.test-testUI.result == 'success'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - uses: actions/download-artifact@v4.1.0
+      with:
+        name: coverage-api
+#     # This item has no matching transformer
+#     - task: reportgenerator@4
+#       displayName: Generate Coverage Report
+#       inputs:
+#         targetDir: "${{ github.workspace }}/CoverageResults"
+#         reports: "${{ runner.workspace }}/coverage-api/coverage/cobertura-coverage.xml;${{ runner.workspace }}/coverage-api/coverage/lcov.info;"
+#         reportTypes: HtmlInline_AzurePipelines_Dark;Badges;Cobertura
+#     # This item has no matching transformer
+#     - task: PublishCodeCoverageResults@2
+#       displayName: Publish Coverage Results to Azure Devops
+#       inputs:
+#         codeCoverageTool: Cobertura
+#         summaryFileLocation: "${{ github.workspace }}/CoverageResults/Cobertura.xml"
+#         reportDirectory: "${{ github.workspace }}/CoverageResults"
+  deployToStaging-deploy_eu_apollo_docker:
+    name: Deploy EU Apollo Docker
+    needs:
+    - build-BuildDockerUs
+    - build-BuildDockerEu
+    - sonar-sonarUI
+    - sonar-sonarAPI
+    runs-on: ubuntu-latest
+    if: needs.build-BuildDockerEu.result == 'success' && needs.sonar-sonarAPI.result == 'success' && env.shouldDeploy == 'true'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Deploy to Azure App Service
+      uses: azure/login@v1.6.0
+      with:
+        creds: "${{ secrets.AZURE_CREDENTIALS }}"
+    - name: Deploy to Azure App Service
+      uses: azure/webapps-deploy@v3.0.0
+      with:
+        app-name: "${{ env.euDockerAppServiceName }}"
+        images: "${{ env.acrEu }}/${{ env.imageRepository }}:${{ env.tag }}"
+  deployToStaging-Deploy:
+    name: Deploy
+    needs:
+    - build-BuildDockerUs
+    - build-BuildDockerEu
+    - sonar-sonarUI
+    - sonar-sonarAPI
+    runs-on:
+      - self-hosted
+      - "${{ env.vmImageName }}"
+    environment:
+      name: env-bkc-pr-us-01-hmx
+    if: (needs.build-BuildDockerEu.result == 'success' && needs.sonar-sonarAPI.result == 'success' && env.shouldDeploy == 'true') && github.RUN_NUMBER == 1
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: download artifact
+      uses: actions/download-artifact@v4.1.0
+    - name: Get IP Address of Agent
+      run: curl -s http://ipinfo.io/json | jq '.ip'
+    - uses: actions/download-artifact@v4.1.0
+      with:
+        name: manifests
+#     # This item has no matching transformer
+#     - task: KubernetesManifest@0
+#       displayName: create image pull secret for acr
+#       inputs:
+#         action: createSecret
+#         namespace: hmx
+#         secretType: dockerRegistry
+#         secretName: "${{ env.imagePullSecret }}"
+#         dockerRegistryEndpoint: "${{ env.acrServiceConnectionUS }}"
+#         kubernetesServiceConnection: "${{ env.k8sServiceConnection }}"
+#     # This item has no matching transformer
+#     - task: KubernetesManifest@0
+#       displayName: create app secret for environment
+#       inputs:
+#         action: createSecret
+#         namespace: hmx
+#         command: apply
+#         secretType: generic
+#         secretArguments: "--from-literal=smartBuyerPassword=${{ secrets.smartBuyerPassword }}\n"
+#         secretName: hmx
+#         kubernetesServiceConnection: "${{ env.k8sServiceConnection }}"
+    - uses: azure/setup-helm@v3.5
+      with:
+        version: latest
+    - uses: azure/k8s-set-context@v3.0
+      with:
+        method: service-account
+        k8s-url: "${{ secrets.K8S_URL }}"
+        k8s-secret: "${{ secrets.K8S_SECRET }}"
+    - shell: bash
+      run: helm upgrade --namespace hmx --install --set releaseName=hmx-app-staging,slotName=staging,image.tag=${{ env.tag }},ingressHostName=staging-app.beeline.com --wait hmx-app-staging ${{ runner.workspace }}/manifests
+  pipelines_modules_postman_test_templates:
+    name: pipelines_modules_postman_test_templates
+    needs:
+    - deployToStaging-deploy_eu_apollo_docker
+    - deployToStaging-Deploy
+    uses: ./.github/workflows/pipelines_modules_postman_test_templates.yml
+    if: needs.deployToStaging.result == 'success' && env.shouldDeploy == 'true'
+    with:
+      graphqlUrl: https://staging-app.beeline.com/graphql
+      baseUrl: https://staging-app.beeline.com
+      qa236ClientSecret: "${{ secrets.qa236ClientSecret }}"
+      qa236UserPassword: "${{ secrets.qa236UserPassword }}"
+      qa230ClientSecret: "${{ secrets.qa230ClientSecret }}"
+      qa230UserPassword: "${{ secrets.qa230UserPassword }}"
+  cypress12-Browserstack:
+    needs:
+    - deployToStaging-deploy_eu_apollo_docker
+    - deployToStaging-Deploy
+    runs-on: ubuntu-latest
+    if: needs.deployToStaging-Deploy.result == 'success' && env.shouldDeploy == 'true'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Install Node.js
+      uses: actions/setup-node@v4.0.0
+      with:
+        node-version: "${{ env.nodeVersion }}"
+#     # This item has no matching transformer
+#     - task: npmAuthenticate@0
+#       displayName: Authenticate NPM
+#       inputs:
+#         workingFile: "${{ env.workingDirectoryUi }}/.npmrc"
+#     # This item has no matching transformer
+#     - task: Cache@2
+#       inputs:
+#         key: npm | ${{ runner.os }} | ${{ env.workingDirectoryUi }}/package-lock.json
+#         path: "${{ env.npm_config_cache }}"
+#         restoreKeys: npm | ${{ runner.os }} | ${{ env.workingDirectoryUi }}/package-lock.json
+#       displayName: Cache NPM packages
+    - name: Install NPM dependencies
+      run: npm ci --cache ${{ env.npm_config_cache }}
+      working-directory: "${{ env.workingDirectoryUi }}"
+    - name: Run Cypress - Parallel X-Browser Tests with BrowserStack
+      env:
+        BROWSERSTACK_ACCESS_KEY: "${{ secrets.BROWSERSTACK_ACCESS_KEY }}"
+        BROWSERSTACK_USERNAME: "${{ env.BROWSERSTACK_USERNAME }}"
+      run: npm run cypress:bs  -- --env "baseUrl=https://staging-app.beeline.com,environmentLevel=${{ env.environmentLevel }}"
+      working-directory: "${{ env.workingDirectoryUi }}"
+  deployToProduction-tagPactProd:
+    name: Pact Prod Tag
+    needs:
+    - deployToProduction-swap_eu_apollo_docker
+    - cypress12-Browserstack
+    - pipelines_modules_postman_test_templates
+    - deployToStaging-deploy_eu_apollo_docker
+    - deployToStaging-Deploy
+    runs-on: ubuntu-latest
+    if: needs.cypress12-Browserstack.result == 'success' && needs.integrationTests.result == 'success' && env.shouldDeploy == 'true'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: Tag released code As Prod
+      run: |-
+        curl -s --show-error -X PUT \-H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${{ secrets.pact-publish-token }}" \
+        https://beeline.pactflow.io/pacticipants/UI/versions/${{ github.sha }}/tags/prod
+      shell: bash
+  deployToProduction-swap_eu_apollo_docker:
+    name: Swap EU Apollo Docker
+    needs:
+    - cypress12-Browserstack
+    - pipelines_modules_postman_test_templates
+    - deployToStaging-deploy_eu_apollo_docker
+    - deployToStaging-Deploy
+    runs-on: ubuntu-latest
+    if: needs.cypress12-Browserstack.result == 'success' && needs.integrationTests.result == 'success' && env.shouldDeploy == 'true'
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - uses: "./.github/actions/pipelines_modules_swap_staging"
+      with:
+        webApp: "${{ env.euDockerAppServiceName }}"
+        serviceConnection: "${{ env.euSubscription }}"
+        resourceGroup: "${{ env.euPrimaryResourceGroup }}"
+  deployToProduction-Deploy:
+    name: Deploy
+    needs:
+    - cypress12-Browserstack
+    - pipelines_modules_postman_test_templates
+    - deployToStaging-deploy_eu_apollo_docker
+    - deployToStaging-Deploy
+    runs-on:
+      - self-hosted
+      - "${{ env.vmImageName }}"
+    environment:
+      name: env-bkc-pr-us-01-hmx
+    if: (needs.cypress12-Browserstack.result == 'success' && needs.integrationTests.result == 'success' && env.shouldDeploy == 'true') && github.RUN_NUMBER == 1
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: download artifact
+      uses: actions/download-artifact@v4.1.0
+    - name: Get IP Address of Agent
+      run: curl -s http://ipinfo.io/json | jq '.ip'
+    - uses: actions/download-artifact@v4.1.0
+      with:
+        name: manifests
+#     # This item has no matching transformer
+#     - task: KubernetesManifest@0
+#       displayName: create image pull secret for acr
+#       inputs:
+#         action: createSecret
+#         namespace: hmx
+#         secretType: dockerRegistry
+#         secretName: "${{ env.imagePullSecret }}"
+#         dockerRegistryEndpoint: "${{ env.acrServiceConnectionUS }}"
+#         kubernetesServiceConnection: "${{ env.k8sServiceConnection }}"
+#     # This item has no matching transformer
+#     - task: KubernetesManifest@0
+#       displayName: create app secret for environment
+#       inputs:
+#         action: createSecret
+#         namespace: hmx
+#         command: apply
+#         secretType: generic
+#         secretArguments: "--from-literal=smartBuyerPassword=${{ secrets.smartBuyerPassword }}\n"
+#         secretName: hmx
+#         kubernetesServiceConnection: "${{ env.k8sServiceConnection }}"
+    - uses: azure/setup-helm@v3.5
+      with:
+        version: latest
+    - uses: azure/k8s-set-context@v3.0
+      with:
+        method: service-account
+        k8s-url: "${{ secrets.K8S_URL }}"
+        k8s-secret: "${{ secrets.K8S_SECRET }}"
+    - shell: bash
+      run: helm upgrade --namespace hmx --install --set releaseName=hmx-app-prod,slotName=prod,image.tag=${{ env.tag }},ingressHostName=app.beeline.com,secondaryIngressHostName=hmx.beeline.com,env.appinsights_key="3cdfcde8-da46-4996-acc3-09790681a2e2",hpa.enabled=true --wait hmx-app-prod ${{ runner.workspace }}/manifests
